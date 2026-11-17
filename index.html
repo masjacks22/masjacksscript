@@ -65,7 +65,9 @@
     .a4-sheet { background: #FFFFFF; width: 210mm; border: 1px solid #CBD5E1; position: relative; box-sizing: border-box; color: #000; }
     .script-paper { padding: var(--pt) var(--pr) 0 var(--pl); min-height: 297mm; }
     #paper-scale-wrap, #pid-scale-wrap { position: relative; flex: none; margin: 0 auto; }
-    #paper-viewport { --gap-bg: #F1F5F9; overflow-x: auto; width: 100%; }
+    #paper-viewport { --gap-bg: #F1F5F9; overflow-x: auto; overflow-y: hidden; width: 100%; }
+    #main-scroll-area { overflow-anchor: none; }
+    #view-editor .sticky { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; background: #FFFFFF !important; }
     #pid-scroll { --gap-bg: #0F172A; }
 
     /* Halaman Cover (judul di tengah kertas) */
@@ -1043,9 +1045,12 @@
       const P = H + G, C = H - T - B;
       const rows = [];
       let spacerSum = 0;
+      const lr = listEl.getBoundingClientRect();
+      const sc = lr.width / (162 * MM_PX) || 1;
       for (const el of Array.from(listEl.children)) {
         if (el.classList.contains("page-gap")) { spacerSum += parseFloat(el.dataset.h || "0") || 0; continue; }
-        rows.push({ el, top: el.offsetTop - spacerSum, h: el.offsetHeight, type: el.dataset.type || "" });
+        const rr = el.getBoundingClientRect();
+        rows.push({ el, top: T + (rr.top - lr.top) / sc - spacerSum, h: rr.height / sc, type: el.dataset.type || "" });
       }
       const plans = new Array(rows.length).fill(null);
       let offset = 0;
@@ -1057,8 +1062,8 @@
         const k = Math.max(0, Math.floor((top - T) / P));
         const pageTop = k * P + T;
         const limit = pageTop + C;
-        const atTop = Math.abs(top - pageTop) < 1;
-        if (!atTop && top + fitH > limit + 1) {
+        const atTop = Math.abs(top - pageTop) < 2;
+        if (!atTop && top + fitH > limit + 2) {
           const sp = (k + 1) * P + T - top;
           plans[i] = { h: sp, wBottom: Math.max(0, k * P + H - top), page: k + 1 };
           offset += sp;
@@ -1093,7 +1098,7 @@
       const s = Math.min(1, avail / A4_W_PX) * (zoom / 100);
       stack.style.transform = `scale(${s})`;
       wrap.style.width = (A4_W_PX * s) + "px";
-      wrap.style.height = (stack.offsetHeight * s) + "px";
+      wrap.style.height = (Math.ceil(stack.offsetHeight * s) + 4) + "px";
     }
     function layoutEditorScale() {
       layoutScaled(document.getElementById("paper-viewport"), document.getElementById("paper-scale-wrap"), document.getElementById("paper-stack"), editorZoom);
@@ -2794,7 +2799,10 @@
       const ro = new ResizeObserver(() => { layoutEditorScale(); layoutPidScale(); });
       ["paper-stack", "pid-presentation-paper"].forEach(id => { const n = document.getElementById(id); if (n) ro.observe(n); });
       const lst = document.getElementById("script-blocks-list");
-      if (lst) new ResizeObserver(() => schedulePaginate()).observe(lst);
+      if (lst) {
+        let lastW = 0;
+        new ResizeObserver(() => { const w = lst.offsetWidth; if (w !== lastW) { lastW = w; schedulePaginate(); } }).observe(lst);
+      }
     }
   </script>
 </body>
