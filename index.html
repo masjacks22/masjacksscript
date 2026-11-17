@@ -48,7 +48,7 @@
 
     /* Glassmorphism Utilities */
     .glass-panel {
-      background: rgba(255, 255, 255, 0.88);
+      background: rgba(255, 255, 255, 0.9);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
     }
@@ -156,7 +156,7 @@
       background: transparent;
       border: none;
       outline: none;
-      padding: 4px 6px;
+      padding: 6px 8px;
       border-radius: 6px;
       color: #000000;
       display: block;
@@ -286,8 +286,8 @@
 
       <!-- MAIN CONTENT WORKSPACE -->
       <main id="main-scroll-area" class="flex-1 overflow-y-auto relative">
-        <!-- VIEW 1: HALAMAN DEPAN (GALERI NASKAH SISWA) -->
-        <section id="view-gallery" class="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
+        <!-- VIEW 1: HALAMAN DEPAN (GALERI NASKAH SISWA + MENU SEARCH NAMA DI AWAL) -->
+        <section id="view-gallery" class="max-w-7xl mx-auto p-4 md:p-6 space-y-5">
           <!-- Header Hero -->
           <div class="glass-panel rounded-2xl border border-slate-200 p-5 md:p-6 shadow-sm flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
@@ -296,7 +296,7 @@
                 <span>Kolaborasi Real-Time • Tanpa Login Siswa</span>
               </div>
               <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">Galeri Karya Naskah Siswa</h1>
-              <p class="text-sm text-slate-600 mt-1">Klik <strong>Edit Bersama (Draft)</strong> untuk menulis bareng kelompok, atau klik <strong>Finish</strong> untuk mengunci hasil akhir (hanya guru yang dapat menghapus/membuka kunci naskah Finish).</p>
+              <p class="text-sm text-slate-600 mt-1">Cari namamu di kotak pencarian di bawah untuk melanjutkan draf kelompok, atau klik <strong>Buat Naskah Baru</strong>.</p>
             </div>
             <div class="flex flex-wrap items-center gap-2.5">
               <button onclick="createNewScript()" class="min-h-[46px] px-5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl flex items-center gap-2 shadow-sm transition">
@@ -307,6 +307,53 @@
                 <i data-lucide="award" class="w-4 h-4 text-blue-600"></i>
                 <span>Login & Nilai Guru</span>
               </button>
+            </div>
+          </div>
+
+          <!-- MENU SEARCH UTAMA (CARI NAMA SISWA / KELOMPOK SAAT DI AWAL) -->
+          <div class="bg-white rounded-2xl border-2 border-blue-200 p-4 md:p-5 shadow-sm space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <label for="filter-search" class="text-xs md:text-sm font-extrabold text-blue-900 flex items-center gap-2">
+                <i data-lucide="user-search" class="w-4 h-4 text-blue-600"></i>
+                <span>Cari Nama Siswa, Kelompok, Kelas, atau Judul Naskah:</span>
+              </label>
+              <span id="search-result-counter" class="text-xs font-bold px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700">Menampilkan 0 naskah</span>
+            </div>
+
+            <div class="flex flex-col md:flex-row gap-3">
+              <div class="relative flex-1">
+                <i data-lucide="search" class="w-5 h-5 text-blue-600 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+                <input
+                  id="filter-search"
+                  oninput="handleSearchInput()"
+                  type="text"
+                  placeholder="Ketik namamu di sini (contoh: Raka, Kelompok 1, XII DKV 1, atau judul film)..."
+                  class="w-full min-h-[48px] pl-11 pr-11 rounded-xl border-2 border-slate-200 text-sm md:text-base font-medium text-slate-900 focus:outline-none focus:border-blue-600 bg-slate-50/50 focus:bg-white transition"
+                />
+                <button
+                  id="clear-search-btn"
+                  onclick="clearSearchInput()"
+                  type="button"
+                  title="Hapus Pencarian"
+                  class="hidden absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center"
+                >
+                  <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+              </div>
+
+              <select id="filter-status" onchange="renderGallery()" class="min-h-[48px] px-3.5 rounded-xl border border-slate-300 text-sm font-semibold text-slate-700 bg-white focus:outline-none focus:border-blue-600">
+                <option value="ALL">Semua Status</option>
+                <option value="Draft">Status: Draft (Bisa Diedit)</option>
+                <option value="Finish">Status: Finish (Terkunci)</option>
+                <option value="GRADED">Sudah Dinilai Guru</option>
+              </select>
+
+              <select id="filter-format" onchange="renderGallery()" class="min-h-[48px] px-3.5 rounded-xl border border-slate-300 text-sm font-semibold text-slate-700 bg-white focus:outline-none focus:border-blue-600">
+                <option value="ALL">Semua Format</option>
+                <option value="Film Pendek">Film Pendek</option>
+                <option value="Video Iklan (TVC)">Video Iklan (TVC)</option>
+                <option value="Film Fitur">Film Fitur</option>
+              </select>
             </div>
           </div>
 
@@ -328,26 +375,6 @@
               <div class="text-xs font-semibold text-indigo-700">Sudah Dinilai Guru</div>
               <div id="stat-graded" class="text-2xl md:text-3xl font-extrabold text-indigo-600 mt-1">0</div>
             </div>
-          </div>
-
-          <!-- Filter & Search Bar -->
-          <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-col md:flex-row gap-3">
-            <div class="relative flex-1">
-              <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
-              <input id="filter-search" oninput="renderGallery()" type="text" placeholder="Cari judul film/iklan, nama siswa, kelompok, atau kelas..." class="w-full min-h-[44px] pl-10 pr-4 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-blue-600" />
-            </div>
-            <select id="filter-status" onchange="renderGallery()" class="min-h-[44px] px-3.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 bg-white focus:outline-none focus:border-blue-600">
-              <option value="ALL">Semua Status</option>
-              <option value="Draft">Status: Draft (Bisa Diedit)</option>
-              <option value="Finish">Status: Finish (Terkunci)</option>
-              <option value="GRADED">Sudah Dinilai Guru</option>
-            </select>
-            <select id="filter-format" onchange="renderGallery()" class="min-h-[44px] px-3.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 bg-white focus:outline-none focus:border-blue-600">
-              <option value="ALL">Semua Format</option>
-              <option value="Film Pendek">Film Pendek</option>
-              <option value="Video Iklan (TVC)">Video Iklan (TVC)</option>
-              <option value="Film Fitur">Film Fitur</option>
-            </select>
           </div>
 
           <!-- Grid Daftar Karya Siswa -->
@@ -407,7 +434,8 @@
                   <span>Finish</span>
                 </button>
 
-                <button id="btn-delete-editor" onclick="confirmDeleteScript(currentScript.id)" class="min-h-[42px] px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs md:text-sm font-semibold flex items-center gap-1" title="Hapus Naskah">
+                <!-- Tombol Delete HANYA dirender / tampil jika Guru sudah login -->
+                <button id="btn-delete-editor" onclick="confirmDeleteScript(currentScript?.id)" class="hidden min-h-[42px] px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs md:text-sm font-semibold flex items-center gap-1" title="Hapus Naskah (Khusus Guru)">
                   <i data-lucide="trash-2" class="w-4 h-4"></i>
                 </button>
               </div>
@@ -437,7 +465,7 @@
           <div id="locked-banner" class="hidden bg-emerald-50 border-b border-emerald-200 px-4 py-2.5 text-center text-xs md:text-sm font-semibold text-emerald-900">
             <span class="inline-flex items-center gap-2">
               <i data-lucide="lock" class="w-4 h-4 text-emerald-600"></i>
-              <span>Naskah ini berstatus <strong>FINISH (Terkunci Permanen)</strong>. Isi naskah tidak dapat diubah maupun dihapus oleh siswa (hanya Guru yang login dapat menghapus atau membuka kuncinya).</span>
+              <span>Naskah ini berstatus <strong>FINISH (Terkunci Permanen)</strong>. Isi naskah tidak dapat diubah lagi oleh siswa.</span>
             </span>
           </div>
 
@@ -589,7 +617,7 @@
                 <i data-lucide="award" class="w-6 h-6"></i>
               </div>
               <h2 class="text-xl font-extrabold text-slate-900">Login Guru — Penilaian & Kontrol Naskah</h2>
-              <p class="text-xs text-slate-500 mt-1">Masuk sebagai guru untuk memeriksa karya siswa, memberikan skor rubrik (0–100), membuka kunci naskah, atau menghapus naskah yang sudah Finish.</p>
+              <p class="text-xs text-slate-500 mt-1">Masuk sebagai guru untuk memeriksa karya siswa, memberikan skor rubrik (0–100), membuka kunci naskah, atau menghapus naskah.</p>
             </div>
 
             <!-- Info Demo Login HANYA tampil saat IS_PREVIEW === true -->
@@ -727,18 +755,18 @@
   storageBucket: "masjacks-script.firebasestorage.app",
   messagingSenderId: "1047200526895",
   appId: "1:1047200526895:web:1dfdd3f7cc9c58b1ee8cda"
-};
+    };
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     // ==========================================
     // 1. PWA SERVICE WORKER DINAMIS VIA BLOB
     // ==========================================
     if ('serviceWorker' in navigator) {
       const swCode = `
-        const CACHE_NAME = 'masjacks-scriptstudio-v3';
+        const CACHE_NAME = 'masjacks-scriptstudio-v4';
         self.addEventListener('install', (e) => self.skipWaiting());
         self.addEventListener('activate', (e) => e.waitUntil(clients.claim()));
         self.addEventListener('fetch', (e) => {
@@ -759,11 +787,12 @@
     let teacherEmailAddress = "";
     let scriptsList = [];
     let currentScript = null;
+    let lastRemoteFingerprint = "";
     let activeBlockIndex = 0;
     let focusedBlockId = null;
     let lastLocalEditAt = 0;
     let autoSyncTimer = null;
-    let isClaimingNewDoc = false;
+    let isSavingToCloud = false;
     let editorZoom = 100;
     let pidZoom = 110;
     let sidebarCollapsed = false;
@@ -815,13 +844,39 @@
       }
     ];
 
-    // Helper Hak Akses Hapus:
-    // - Draft: boleh dihapus siswa maupun guru
-    // - Finish: HANYA boleh dihapus oleh Guru yang login (isTeacherLoggedIn === true)
-    function canDeleteScript(script) {
-      if (!script) return false;
-      if (script.status === "Finish") return isTeacherLoggedIn === true;
-      return true;
+    // SEMUA DELETE DIKUNCI KHUSUS GURU YANG LOGIN (Draft maupun Finish)
+    function canDeleteScript() {
+      return isTeacherLoggedIn === true;
+    }
+
+    function normalizeElements(elements) {
+      if (!Array.isArray(elements) || elements.length === 0) {
+        return [
+          { id: `el_${Date.now()}_init1`, type: "scene", content: "INT. " },
+          { id: `el_${Date.now()}_init2`, type: "action", content: "" }
+        ];
+      }
+      return elements.map((el, idx) => ({
+        id: el && el.id ? String(el.id) : `el_norm_${idx}_${Math.random().toString(36).slice(2, 6)}`,
+        type: el && el.type ? String(el.type) : "action",
+        content: el && typeof el.content === "string" ? el.content : ""
+      }));
+    }
+
+    function computeScriptFingerprint(docObj) {
+      if (!docObj) return "";
+      return JSON.stringify({
+        id: docObj.id || "",
+        title: docObj.title || "",
+        formatType: docObj.formatType || "",
+        authorName: docObj.authorName || "",
+        kelas: docObj.kelas || "",
+        logline: docObj.logline || "",
+        status: docObj.status || "Draft",
+        score: docObj.score ?? null,
+        teacherNotes: docObj.teacherNotes || "",
+        elements: normalizeElements(docObj.elements)
+      });
     }
 
     // ==========================================
@@ -846,6 +901,8 @@
 
         scriptsList = JSON.parse(JSON.stringify(INITIAL_PREVIEW_SCRIPTS));
         currentScript = JSON.parse(JSON.stringify(scriptsList[0]));
+        currentScript.elements = normalizeElements(currentScript.elements);
+        lastRemoteFingerprint = computeScriptFingerprint(currentScript);
         refreshAllUI();
       } else {
         // Mode Produksi Murni (ZERO dummy data, ZERO preview UI, ZERO localStorage)
@@ -864,22 +921,32 @@
           refreshAllUI();
         });
 
-        // Real-time listener Firestore koleksi 'scripts' dengan Block-Level Anti-Conflict Merge
+        // Real-time listener Firestore koleksi 'scripts' dengan Isolasi Anti-Conflict
         const q = query(collection(db, "scripts"), orderBy("updatedAt", "desc"));
         onSnapshot(q, (snapshot) => {
-          scriptsList = snapshot.docs.map(d => ({
-            id: d.id,
-            ...d.data()
-          }));
+          scriptsList = snapshot.docs.map(d => {
+            const data = d.data();
+            return {
+              id: d.id,
+              ...data,
+              elements: normalizeElements(data.elements)
+            };
+          });
 
           if (!currentScript && scriptsList.length > 0) {
             currentScript = JSON.parse(JSON.stringify(scriptsList[0]));
+            lastRemoteFingerprint = computeScriptFingerprint(currentScript);
           } else if (!currentScript) {
             currentScript = createBlankScriptObject();
           } else if (currentScript.id) {
             const remoteDoc = scriptsList.find(s => s.id === currentScript.id);
             if (remoteDoc) {
-              mergeRemoteScriptSafely(remoteDoc);
+              const incomingFp = computeScriptFingerprint(remoteDoc);
+              // HANYA proses merge jika dokumen yang sedang dibuka BENAR-BENAR berubah di server
+              if (incomingFp !== lastRemoteFingerprint) {
+                lastRemoteFingerprint = incomingFp;
+                mergeRemoteScriptSafely(remoteDoc);
+              }
             }
           }
 
@@ -893,8 +960,9 @@
       }
     }
 
-    // Penggabungan Real-Time Anti-Bentrok Kursor
+    // Penggabungan Real-Time Anti-Bentrok Kursor (Surgical In-Place Update)
     function mergeRemoteScriptSafely(remoteDoc) {
+      if (!currentScript) return;
       const wasDraft = currentScript.status !== "Finish";
       currentScript.status = remoteDoc.status;
       currentScript.score = remoteDoc.score ?? null;
@@ -909,18 +977,40 @@
       }
 
       const activeTagId = document.activeElement?.id || "";
-      if (activeTagId !== "meta-title") currentScript.title = remoteDoc.title || "";
-      if (activeTagId !== "meta-format") currentScript.formatType = remoteDoc.formatType || "Film Pendek";
-      if (activeTagId !== "meta-author") currentScript.authorName = remoteDoc.authorName || "";
-      if (activeTagId !== "meta-kelas") currentScript.kelas = remoteDoc.kelas || "";
-      if (activeTagId !== "meta-logline") currentScript.logline = remoteDoc.logline || "";
+      if (activeTagId !== "meta-title") {
+        currentScript.title = remoteDoc.title || "";
+        const el = document.getElementById("meta-title");
+        if (el && el.value !== currentScript.title) el.value = currentScript.title;
+      }
+      if (activeTagId !== "meta-format") {
+        currentScript.formatType = remoteDoc.formatType || "Film Pendek";
+        const el = document.getElementById("meta-format");
+        if (el && el.value !== currentScript.formatType) el.value = currentScript.formatType;
+      }
+      if (activeTagId !== "meta-author") {
+        currentScript.authorName = remoteDoc.authorName || "";
+        const el = document.getElementById("meta-author");
+        if (el && el.value !== currentScript.authorName) el.value = currentScript.authorName;
+      }
+      if (activeTagId !== "meta-kelas") {
+        currentScript.kelas = remoteDoc.kelas || "";
+        const el = document.getElementById("meta-kelas");
+        if (el && el.value !== currentScript.kelas) el.value = currentScript.kelas;
+      }
+      if (activeTagId !== "meta-logline") {
+        currentScript.logline = remoteDoc.logline || "";
+        const el = document.getElementById("meta-logline");
+        if (el && el.value !== currentScript.logline) el.value = currentScript.logline;
+      }
 
-      const isActivelyTyping = focusedBlockId && (Date.now() - lastLocalEditAt < 2500);
-      const localActiveBlock = isActivelyTyping
-        ? currentScript.elements.find(b => b.id === focusedBlockId)
+      const activeDomBlockId = document.activeElement?.getAttribute?.("data-block-id") || focusedBlockId;
+      const isActivelyEditingNow = Boolean(activeDomBlockId) && (Date.now() - lastLocalEditAt < 4000);
+
+      const localActiveBlock = activeDomBlockId
+        ? currentScript.elements.find(b => b.id === activeDomBlockId)
         : null;
 
-      const mergedElements = (remoteDoc.elements || []).map(rBlock => {
+      const mergedElements = normalizeElements(remoteDoc.elements).map(rBlock => {
         if (localActiveBlock && rBlock.id === localActiveBlock.id) {
           return localActiveBlock;
         }
@@ -929,44 +1019,50 @@
 
       if (localActiveBlock && !mergedElements.some(b => b.id === localActiveBlock.id)) {
         const localIdx = currentScript.elements.findIndex(b => b.id === localActiveBlock.id);
-        mergedElements.splice(Math.min(localIdx, mergedElements.length), 0, localActiveBlock);
+        mergedElements.splice(Math.min(Math.max(0, localIdx), mergedElements.length), 0, localActiveBlock);
       }
 
-      currentScript.elements = mergedElements.length > 0 ? mergedElements : currentScript.elements;
+      currentScript.elements = mergedElements;
 
       if (!document.getElementById("view-editor").classList.contains("hidden")) {
-        if (!isActivelyTyping) {
+        if (!isActivelyEditingNow && !document.activeElement?.classList?.contains("script-textarea")) {
           renderEditor();
         } else {
-          syncNonFocusedBlocksInDOM();
+          syncNonFocusedBlocksInDOM(activeDomBlockId);
         }
       }
     }
 
-    function syncNonFocusedBlocksInDOM() {
+    function syncNonFocusedBlocksInDOM(protectedBlockId) {
       const listEl = document.getElementById("script-blocks-list");
       if (!listEl) return;
-      const renderedCount = listEl.children.length;
-      if (renderedCount !== currentScript.elements.length) {
-        const savedFocusId = focusedBlockId;
-        const taBefore = savedFocusId ? document.querySelector(`[data-block-id="${savedFocusId}"]`) : null;
-        const selStart = taBefore ? taBefore.selectionStart : 0;
-        const selEnd = taBefore ? taBefore.selectionEnd : 0;
+
+      // Jika jumlah baris berubah karena teman menambah/menghapus baris, simpan posisi kursor sebelum render ulang
+      if (listEl.children.length !== currentScript.elements.length) {
+        const activeTa = document.activeElement;
+        const savedId = activeTa?.getAttribute?.("data-block-id") || protectedBlockId;
+        const selStart = typeof activeTa?.selectionStart === "number" ? activeTa.selectionStart : null;
+        const selEnd = typeof activeTa?.selectionEnd === "number" ? activeTa.selectionEnd : null;
+
         renderEditor();
-        if (savedFocusId) {
-          const taAfter = document.querySelector(`[data-block-id="${savedFocusId}"]`);
-          if (taAfter) {
-            taAfter.focus();
-            taAfter.setSelectionRange(selStart, selEnd);
+
+        if (savedId) {
+          const restoredTa = document.querySelector(`[data-block-id="${savedId}"]`);
+          if (restoredTa) {
+            restoredTa.focus();
+            if (selStart !== null && selEnd !== null) {
+              try { restoredTa.setSelectionRange(selStart, selEnd); } catch (_) {}
+            }
           }
         }
         return;
       }
 
+      // Update isi blok lain yang tidak sedang diketik tanpa menyentuh blok yang sedang aktif
       currentScript.elements.forEach((block, idx) => {
-        if (block.id === focusedBlockId) return;
+        if (block.id === protectedBlockId) return;
         const ta = document.getElementById("block-input-" + idx);
-        if (ta && ta.value !== block.content) {
+        if (ta && document.activeElement !== ta && ta.value !== block.content) {
           ta.value = block.content;
           ta.className = `script-textarea w-full el-${block.type}`;
           autoResizeTextarea(ta);
@@ -1038,8 +1134,27 @@
     };
 
     // ==========================================
-    // 5. GALERI HALAMAN DEPAN (TANPA LOGIN SISWA)
+    // 5. GALERI HALAMAN DEPAN & MENU SEARCH NAMA SISWA
     // ==========================================
+    window.handleSearchInput = function() {
+      const input = document.getElementById("filter-search");
+      const clearBtn = document.getElementById("clear-search-btn");
+      if (clearBtn) {
+        clearBtn.classList.toggle("hidden", !input || !input.value.trim());
+      }
+      renderGallery();
+    };
+
+    window.clearSearchInput = function() {
+      const input = document.getElementById("filter-search");
+      if (input) {
+        input.value = "";
+        input.focus();
+      }
+      document.getElementById("clear-search-btn")?.classList.add("hidden");
+      renderGallery();
+    };
+
     function getPredikat(score) {
       if (score === null || score === undefined || score === "") return null;
       const n = Number(score);
@@ -1050,7 +1165,7 @@
     }
 
     window.renderGallery = function() {
-      const searchVal = (document.getElementById("filter-search")?.value || "").toLowerCase();
+      const searchVal = (document.getElementById("filter-search")?.value || "").trim().toLowerCase();
       const statusFilter = document.getElementById("filter-status")?.value || "ALL";
       const formatFilter = document.getElementById("filter-format")?.value || "ALL";
 
@@ -1066,9 +1181,10 @@
 
       const filtered = scriptsList.filter(item => {
         const matchSearch =
-          (item.title || "").toLowerCase().includes(searchVal) ||
+          !searchVal ||
           (item.authorName || "").toLowerCase().includes(searchVal) ||
           (item.kelas || "").toLowerCase().includes(searchVal) ||
+          (item.title || "").toLowerCase().includes(searchVal) ||
           (item.logline || "").toLowerCase().includes(searchVal);
         const hasScore = item.score !== null && item.score !== undefined && item.score !== "";
         const matchStatus =
@@ -1078,6 +1194,13 @@
         return matchSearch && matchStatus && matchFormat;
       });
 
+      const counterEl = document.getElementById("search-result-counter");
+      if (counterEl) {
+        counterEl.textContent = searchVal
+          ? `Ditemukan ${filtered.length} dari ${totalCount} naskah`
+          : `Menampilkan ${filtered.length} naskah`;
+      }
+
       const grid = document.getElementById("gallery-grid");
       if (filtered.length === 0) {
         grid.innerHTML = `
@@ -1085,17 +1208,22 @@
             <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-500 flex items-center justify-center mx-auto">
               <i data-lucide="file-plus-2" class="w-6 h-6"></i>
             </div>
-            <h3 class="font-bold text-slate-900">Belum ada naskah ditemukan</h3>
-            <p class="text-sm text-slate-500 max-w-md mx-auto">Klik tombol <strong>Buat Naskah Baru</strong> untuk mulai menulis skenario film atau iklan bersama siswa.</p>
+            <h3 class="font-bold text-slate-900">Naskah tidak ditemukan</h3>
+            <p class="text-sm text-slate-500 max-w-md mx-auto">
+              ${searchVal
+                ? `Tidak ada naskah dengan kata kunci "<strong>${escapeHtml(searchVal)}</strong>". Coba kata kunci lain atau buat naskah baru.`
+                : `Klik tombol <strong>Buat Naskah Baru</strong> untuk mulai menulis skenario film atau iklan bersama kelompok.`}
+            </p>
           </div>
         `;
         lucide.createIcons();
         return;
       }
 
+      const allowDelete = canDeleteScript();
+
       grid.innerHTML = filtered.map(script => {
         const isFinished = script.status === "Finish";
-        const allowDelete = canDeleteScript(script);
         const sceneCount = (script.elements || []).filter(e => e.type === "scene").length;
         const est = calculateDuration(script);
         const pred = getPredikat(script.score);
@@ -1170,14 +1298,10 @@
               </button>
 
               ${allowDelete ? `
-                <button onclick="confirmDeleteScript('${script.id}')" class="min-h-[40px] px-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold flex items-center justify-center" title="Delete Naskah">
+                <button onclick="confirmDeleteScript('${script.id}')" class="min-h-[40px] px-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold flex items-center justify-center" title="Delete Naskah (Khusus Guru)">
                   <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                 </button>
-              ` : `
-                <span class="min-h-[40px] px-2.5 rounded-xl bg-slate-50 text-slate-400 border border-slate-200 text-xs flex items-center justify-center" title="Terkunci: Hanya Guru yang login dapat menghapus naskah Finish">
-                  <i data-lucide="shield-alert" class="w-3.5 h-3.5"></i>
-                </span>
-              `}
+              ` : ""}
             </div>
           </div>
         `;
@@ -1191,6 +1315,7 @@
     // ==========================================
     window.createNewScript = function() {
       currentScript = createBlankScriptObject();
+      lastRemoteFingerprint = "";
       activeBlockIndex = 0;
       focusedBlockId = null;
       document.getElementById("duplicate-title-alert").classList.add("hidden");
@@ -1202,6 +1327,8 @@
       const found = scriptsList.find(s => s.id === id);
       if (!found) return;
       currentScript = JSON.parse(JSON.stringify(found));
+      currentScript.elements = normalizeElements(currentScript.elements);
+      lastRemoteFingerprint = computeScriptFingerprint(currentScript);
       activeBlockIndex = 0;
       focusedBlockId = null;
       document.getElementById("duplicate-title-alert").classList.add("hidden");
@@ -1215,8 +1342,13 @@
 
     window.renderEditor = function() {
       if (!currentScript) currentScript = createBlankScriptObject();
+      currentScript.elements = normalizeElements(currentScript.elements);
+      if (activeBlockIndex >= currentScript.elements.length) {
+        activeBlockIndex = Math.max(0, currentScript.elements.length - 1);
+      }
+
       const isLocked = currentScript.status === "Finish";
-      const allowDelete = Boolean(currentScript.id) && canDeleteScript(currentScript);
+      const allowDelete = Boolean(currentScript.id) && canDeleteScript();
 
       const titleInput = document.getElementById("meta-title");
       const formatSelect = document.getElementById("meta-format");
@@ -1281,9 +1413,9 @@
         };
 
         return `
-          <div class="group relative flex items-start gap-1.5 rounded-lg transition ${isActive ? 'bg-indigo-50/60' : ''}" onclick="setActiveBlockIndex(${idx})">
+          <div id="block-row-${idx}" class="group relative flex items-start gap-1.5 rounded-lg transition ${isActive ? 'bg-indigo-50/60' : ''}" onclick="setActiveBlockIndex(${idx})">
             <div class="w-16 shrink-0 pt-2 select-none hidden sm:flex flex-col items-end pr-1">
-              <span class="text-[9px] font-sans font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded ${isActive ? 'bg-blue-600 text-white' : 'text-slate-400 bg-slate-100'}">
+              <span data-badge-idx="${idx}" class="text-[9px] font-sans font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded ${isActive ? 'bg-blue-600 text-white' : 'text-slate-400 bg-slate-100'}">
                 ${block.type.slice(0, 5)}
               </span>
             </div>
@@ -1296,7 +1428,7 @@
                 ${isLocked ? "readonly" : ""}
                 placeholder="${placeholderMap[block.type] || ''}"
                 onfocus="handleBlockFocus(${idx}, '${block.id}')"
-                onblur="handleBlockBlur()"
+                onblur="handleBlockBlur(${idx})"
                 oninput="handleBlockInput(${idx}, this)"
                 onkeydown="handleBlockKeydown(event, ${idx})"
                 class="script-textarea w-full el-${block.type}"
@@ -1305,13 +1437,13 @@
 
             ${!isLocked ? `
               <div class="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus-within:opacity-100 flex items-center gap-0.5 pt-1 shrink-0 font-sans">
-                <button onclick="moveBlock(${idx}, -1); event.stopPropagation();" title="Geser Atas" class="p-1.5 rounded hover:bg-slate-200 text-slate-500">
+                <button type="button" onclick="moveBlock(${idx}, -1); event.stopPropagation();" title="Geser Atas" class="p-1.5 rounded hover:bg-slate-200 text-slate-500">
                   <i data-lucide="chevron-up" class="w-3.5 h-3.5"></i>
                 </button>
-                <button onclick="moveBlock(${idx}, 1); event.stopPropagation();" title="Geser Bawah" class="p-1.5 rounded hover:bg-slate-200 text-slate-500">
+                <button type="button" onclick="moveBlock(${idx}, 1); event.stopPropagation();" title="Geser Bawah" class="p-1.5 rounded hover:bg-slate-200 text-slate-500">
                   <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
                 </button>
-                <button onclick="removeBlock(${idx}); event.stopPropagation();" title="Hapus Baris" class="p-1.5 rounded hover:bg-rose-100 text-rose-500">
+                <button type="button" onclick="removeBlock(${idx}); event.stopPropagation();" title="Hapus Baris" class="p-1.5 rounded hover:bg-rose-100 text-rose-500">
                   <i data-lucide="x" class="w-3.5 h-3.5"></i>
                 </button>
               </div>
@@ -1333,6 +1465,7 @@
     };
 
     function autoResizeTextarea(el) {
+      if (!el) return;
       el.style.height = "auto";
       el.style.height = el.scrollHeight + "px";
     }
@@ -1371,20 +1504,47 @@
 
     window.handleBlockFocus = function(idx, blockId) {
       focusedBlockId = blockId;
+      lastLocalEditAt = Date.now();
       setActiveBlockIndex(idx);
     };
 
-    window.handleBlockBlur = function() {
+    window.handleBlockBlur = function(idx) {
+      // Normalisasi huruf kapital saat selesai mengetik baris tanpa mengganggu IME saat mengetik
+      if (currentScript && currentScript.elements[idx]) {
+        const block = currentScript.elements[idx];
+        if (["scene", "character", "transition", "shot"].includes(block.type) && block.content) {
+          block.content = block.content.toUpperCase();
+          const ta = document.getElementById("block-input-" + idx);
+          if (ta && ta.value !== block.content) ta.value = block.content;
+        }
+      }
       setTimeout(() => {
         if (!document.activeElement?.classList?.contains("script-textarea")) {
           focusedBlockId = null;
         }
-      }, 200);
+      }, 250);
     };
 
     window.setActiveBlockIndex = function(idx) {
       if (activeBlockIndex === idx) return;
+      const prevRow = document.getElementById("block-row-" + activeBlockIndex);
+      const prevBadge = document.querySelector(`[data-badge-idx="${activeBlockIndex}"]`);
+      if (prevRow) prevRow.classList.remove("bg-indigo-50/60");
+      if (prevBadge) {
+        prevBadge.classList.remove("bg-blue-600", "text-white");
+        prevBadge.classList.add("text-slate-400", "bg-slate-100");
+      }
+
       activeBlockIndex = idx;
+
+      const nextRow = document.getElementById("block-row-" + idx);
+      const nextBadge = document.querySelector(`[data-badge-idx="${idx}"]`);
+      if (nextRow) nextRow.classList.add("bg-indigo-50/60");
+      if (nextBadge) {
+        nextBadge.classList.add("bg-blue-600", "text-white");
+        nextBadge.classList.remove("text-slate-400", "bg-slate-100");
+      }
+
       updateElementToolbarHighlight();
       renderSmartChips();
     };
@@ -1408,6 +1568,9 @@
       if (!currentScript || currentScript.status === "Finish") return;
       if (!currentScript.elements[activeBlockIndex]) return;
       currentScript.elements[activeBlockIndex].type = newType;
+      if (["scene", "character", "transition", "shot"].includes(newType)) {
+        currentScript.elements[activeBlockIndex].content = (currentScript.elements[activeBlockIndex].content || "").toUpperCase();
+      }
       lastLocalEditAt = Date.now();
       renderEditor();
       focusBlock(activeBlockIndex);
@@ -1417,22 +1580,31 @@
     window.handleBlockInput = function(idx, textareaEl) {
       if (!currentScript || currentScript.status === "Finish") return;
       const block = currentScript.elements[idx];
+      if (!block) return;
+
       focusedBlockId = block.id;
       lastLocalEditAt = Date.now();
 
-      let val = textareaEl.value;
-      if (["scene", "character", "transition", "shot"].includes(block.type)) {
-        val = val.toUpperCase();
-        const start = textareaEl.selectionStart;
-        const end = textareaEl.selectionEnd;
-        textareaEl.value = val;
-        textareaEl.setSelectionRange(start, end);
-      }
-      block.content = val;
+      // Simpan nilai mentah langsung tanpa memaksa setSelectionRange agar keyboard layar sentuh/IME tidak macet
+      const rawVal = textareaEl.value;
+      block.content = ["scene", "character", "transition", "shot"].includes(block.type)
+        ? rawVal.toUpperCase()
+        : rawVal;
+
       autoResizeTextarea(textareaEl);
       updateDurationBadge();
       scheduleAutoSync();
     };
+
+    function normalizeElementsForStorage(elements) {
+      return normalizeElements(elements).map(el => ({
+        id: el.id,
+        type: el.type,
+        content: ["scene", "character", "transition", "shot"].includes(el.type)
+          ? (el.content || "").toUpperCase()
+          : (el.content || "")
+      }));
+    }
 
     function scheduleAutoSync() {
       if (!currentScript || currentScript.status === "Finish") return;
@@ -1444,31 +1616,47 @@
       clearTimeout(autoSyncTimer);
       autoSyncTimer = setTimeout(() => {
         performSilentCloudSync();
-      }, 1400);
+      }, 1500);
     }
 
     async function performSilentCloudSync() {
       if (!currentScript || currentScript.status === "Finish") return;
       if (!currentScript.title || !currentScript.title.trim()) return;
+      if (isSavingToCloud) {
+        scheduleAutoSync();
+        return;
+      }
 
       const syncText = document.getElementById("live-sync-text");
+      const cleanElements = normalizeElementsForStorage(currentScript.elements);
 
       if (IS_PREVIEW) {
         if (!currentScript.id) {
           currentScript.id = "script_" + Date.now() + "_" + Math.random().toString(36).slice(2, 5);
           currentScript.updatedAt = new Date().toISOString();
-          scriptsList.unshift(JSON.parse(JSON.stringify(currentScript)));
+          scriptsList.unshift(JSON.parse(JSON.stringify({ ...currentScript, elements: cleanElements })));
         } else {
           const idx = scriptsList.findIndex(s => s.id === currentScript.id);
           currentScript.updatedAt = new Date().toISOString();
-          if (idx !== -1) scriptsList[idx] = JSON.parse(JSON.stringify(currentScript));
+          if (idx !== -1) scriptsList[idx] = JSON.parse(JSON.stringify({ ...currentScript, elements: cleanElements }));
         }
+        lastRemoteFingerprint = computeScriptFingerprint({ ...currentScript, elements: cleanElements });
         renderGallery();
         if (syncText) syncText.textContent = "Tersimpan (Preview)";
         return;
       }
 
+      isSavingToCloud = true;
       try {
+        const isNew = !currentScript.id;
+        const targetDocRef = isNew
+          ? doc(collection(db, "scripts"))
+          : doc(db, "scripts", currentScript.id);
+
+        if (isNew) {
+          currentScript.id = targetDocRef.id;
+        }
+
         const payload = {
           title: currentScript.title.trim(),
           formatType: currentScript.formatType || "Film Pendek",
@@ -1476,40 +1664,46 @@
           kelas: (currentScript.kelas || "").trim(),
           logline: (currentScript.logline || "").trim(),
           status: "Draft",
-          elements: currentScript.elements,
+          elements: cleanElements,
           updatedAt: serverTimestamp()
         };
 
-        if (!currentScript.id) {
-          if (isClaimingNewDoc) return;
-          isClaimingNewDoc = true;
+        lastRemoteFingerprint = computeScriptFingerprint({
+          ...currentScript,
+          ...payload
+        });
+
+        if (isNew) {
           payload.score = null;
           payload.rubric = { format: 0, story: 0, visual: 0 };
           payload.teacherNotes = "";
           payload.createdAt = serverTimestamp();
-          const docRef = await addDoc(collection(db, "scripts"), payload);
-          currentScript.id = docRef.id;
-          isClaimingNewDoc = false;
+          await setDoc(targetDocRef, payload);
         } else {
-          await updateDoc(doc(db, "scripts", currentScript.id), payload);
+          await updateDoc(targetDocRef, payload);
         }
 
         if (syncText) syncText.textContent = "Live Sync Aktif";
       } catch (err) {
-        isClaimingNewDoc = false;
         if (syncText) syncText.textContent = "Menunggu Koneksi...";
+      } finally {
+        isSavingToCloud = false;
       }
     }
 
     window.handleBlockKeydown = function(e, idx) {
       if (!currentScript || currentScript.status === "Finish") return;
       const block = currentScript.elements[idx];
+      if (!block) return;
 
       if (e.key === "Tab") {
         e.preventDefault();
         const order = ["scene", "action", "character", "parenthetical", "dialogue", "transition", "shot"];
         const nextType = order[(order.indexOf(block.type) + 1) % order.length];
         block.type = nextType;
+        if (["scene", "character", "transition", "shot"].includes(nextType)) {
+          block.content = (block.content || "").toUpperCase();
+        }
         lastLocalEditAt = Date.now();
         renderEditor();
         focusBlock(idx);
@@ -1519,6 +1713,9 @@
 
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
+        if (["scene", "character", "transition", "shot"].includes(block.type)) {
+          block.content = (block.content || "").toUpperCase();
+        }
         const nextTypeMap = {
           scene: "action",
           action: "action",
@@ -1551,13 +1748,15 @@
         if (ta) {
           ta.focus();
           const len = ta.value.length;
-          if (ta.value === "()") {
-            ta.setSelectionRange(1, 1);
-          } else {
-            ta.setSelectionRange(len, len);
-          }
+          try {
+            if (ta.value === "()") {
+              ta.setSelectionRange(1, 1);
+            } else {
+              ta.setSelectionRange(len, len);
+            }
+          } catch (_) {}
         }
-      }, 20);
+      }, 25);
     }
 
     window.addNewBlockAfterActive = function() {
@@ -1628,7 +1827,7 @@
         const existingChars = [...new Set(
           currentScript.elements
             .filter(e => e.type === "character" && e.content.trim())
-            .map(e => e.content.replace(/\s*\(.*?\)\s*/g, "").trim())
+            .map(e => e.content.replace(/\s*\(.*?\)\s*/g, "").trim().toUpperCase())
         )];
         chips = [...existingChars, " (V.O.)", " (O.S.)", " (CONT'D)"];
       } else if (block.type === "transition") {
@@ -1646,7 +1845,7 @@
 
       bar.innerHTML = `<span class="text-[11px] font-bold text-blue-600 shrink-0">Saran Cepat:</span>` +
         chips.map(c => `
-          <button onclick="insertChipText('${c.replace(/'/g, "\\'")}')" class="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-800 text-xs font-semibold border border-blue-200 shrink-0 transition">
+          <button type="button" onclick="insertChipText('${c.replace(/'/g, "\\'")}')" class="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-800 text-xs font-semibold border border-blue-200 shrink-0 transition">
             ${escapeHtml(c.trim())}
           </button>
         `).join("");
@@ -1699,7 +1898,7 @@
     }
 
     // ==========================================
-    // 7. SIMPAN DRAFT, FINISH (KUNCI), & DELETE
+    // 7. SIMPAN DRAFT, FINISH (KUNCI), & DELETE (KHUSUS GURU)
     // ==========================================
     window.saveScript = async function(targetStatus = "Draft") {
       if (!currentScript) return;
@@ -1721,6 +1920,7 @@
 
       clearTimeout(autoSyncTimer);
       currentScript.status = targetStatus;
+      currentScript.elements = normalizeElementsForStorage(currentScript.elements);
 
       if (IS_PREVIEW) {
         if (!currentScript.id) {
@@ -1732,6 +1932,7 @@
           currentScript.updatedAt = new Date().toISOString();
           if (idx !== -1) scriptsList[idx] = JSON.parse(JSON.stringify(currentScript));
         }
+        lastRemoteFingerprint = computeScriptFingerprint(currentScript);
         renderEditor();
         renderGallery();
         showToast(
@@ -1741,7 +1942,17 @@
           "success"
         );
       } else {
+        isSavingToCloud = true;
         try {
+          const isNew = !currentScript.id;
+          const targetDocRef = isNew
+            ? doc(collection(db, "scripts"))
+            : doc(db, "scripts", currentScript.id);
+
+          if (isNew) {
+            currentScript.id = targetDocRef.id;
+          }
+
           const payload = {
             title: currentScript.title.trim(),
             formatType: currentScript.formatType || "Film Pendek",
@@ -1753,15 +1964,19 @@
             updatedAt: serverTimestamp()
           };
 
-          if (!currentScript.id) {
+          lastRemoteFingerprint = computeScriptFingerprint({
+            ...currentScript,
+            ...payload
+          });
+
+          if (isNew) {
             payload.score = null;
             payload.rubric = { format: 0, story: 0, visual: 0 };
             payload.teacherNotes = "";
             payload.createdAt = serverTimestamp();
-            const docRef = await addDoc(collection(db, "scripts"), payload);
-            currentScript.id = docRef.id;
+            await setDoc(targetDocRef, payload);
           } else {
-            await updateDoc(doc(db, "scripts", currentScript.id), payload);
+            await updateDoc(targetDocRef, payload);
           }
 
           renderEditor();
@@ -1773,6 +1988,8 @@
           );
         } catch (err) {
           showToast("Gagal menyimpan ke Firestore: " + err.message, "error");
+        } finally {
+          isSavingToCloud = false;
         }
       }
     };
@@ -1784,7 +2001,7 @@
       }
       openConfirmModal({
         title: "Kunci Final Naskah (Finish)?",
-        desc: "Setelah menekan FINISH, naskah akan terkunci permanen dan TIDAK BISA diedit ulang maupun dihapus oleh siswa (hanya Guru yang login yang memiliki akses menghapus atau membuka kuncinya).",
+        desc: "Setelah menekan FINISH, naskah akan terkunci permanen dan TIDAK BISA diedit ulang oleh siswa.",
         icon: "check-circle-2",
         iconBg: "bg-emerald-100 text-emerald-700",
         btnBg: "bg-emerald-600 hover:bg-emerald-700",
@@ -1795,17 +2012,14 @@
 
     window.confirmDeleteScript = function(id) {
       if (!id) return;
-      const target = scriptsList.find(s => s.id === id);
-      if (target && !canDeleteScript(target)) {
-        showToast("Akses ditolak: Naskah yang sudah FINISH hanya dapat dihapus oleh Guru yang login!", "error");
+      if (!canDeleteScript()) {
+        showToast("Akses ditolak: Hanya Guru yang login dapat menghapus naskah!", "error");
         return;
       }
 
       openConfirmModal({
-        title: "Hapus Naskah Ini?",
-        desc: target && target.status === "Finish"
-          ? "Anda menghapus naskah berstatus FINISH sebagai Guru. Tindakan ini permanen dan tidak dapat dibatalkan."
-          : "Naskah draft yang dihapus akan hilang dari daftar halaman depan. Tindakan ini tidak dapat dibatalkan.",
+        title: "Hapus Naskah Ini (Akses Guru)?",
+        desc: "Anda menghapus naskah ini sebagai Guru. Tindakan ini permanen dan naskah akan hilang dari galeri.",
         icon: "trash-2",
         iconBg: "bg-rose-100 text-rose-700",
         btnBg: "bg-rose-600 hover:bg-rose-700",
@@ -1815,9 +2029,8 @@
     };
 
     async function deleteScriptById(id) {
-      const target = scriptsList.find(s => s.id === id);
-      if (target && !canDeleteScript(target)) {
-        showToast("Akses ditolak: Hanya Guru yang login dapat menghapus naskah Finish.", "error");
+      if (!canDeleteScript()) {
+        showToast("Akses ditolak: Hanya Guru yang login dapat menghapus naskah.", "error");
         return;
       }
 
@@ -1830,7 +2043,7 @@
         if (!document.getElementById("view-editor").classList.contains("hidden")) {
           switchTab("gallery");
         }
-        showToast("Naskah berhasil dihapus.", "success");
+        showToast("Naskah berhasil dihapus oleh Guru.", "success");
       } else {
         try {
           await deleteDoc(doc(db, "scripts", id));
@@ -1840,9 +2053,9 @@
           if (!document.getElementById("view-editor").classList.contains("hidden")) {
             switchTab("gallery");
           }
-          showToast("Naskah dihapus dari Firestore.", "success");
+          showToast("Naskah berhasil dihapus dari Firestore.", "success");
         } catch (err) {
-          showToast("Gagal menghapus naskah (Pastikan Anda login sebagai Guru jika naskah sudah Finish): " + err.message, "error");
+          showToast("Gagal menghapus naskah (Pastikan Anda login sebagai Guru): " + err.message, "error");
         }
       }
     }
@@ -2074,7 +2287,7 @@
           isTeacherLoggedIn = true;
           teacherEmailAddress = email;
           refreshAllUI();
-          showToast("Berhasil masuk ke Panel Penilaian Guru! Akses hapus naskah Finish aktif.", "success");
+          showToast("Berhasil masuk ke Panel Penilaian Guru! Akses hapus naskah aktif.", "success");
         } else {
           showToast("Email/Password demo salah! Gunakan guru@smk.sch.id / guru123", "error");
         }
@@ -2227,7 +2440,7 @@
                     <i data-lucide="unlock" class="w-3.5 h-3.5"></i> Buka Kunci
                   </button>
                 ` : ""}
-                <button onclick="confirmDeleteScript('${s.id}')" class="min-h-[40px] px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold flex items-center gap-1" title="Hapus Naskah">
+                <button onclick="confirmDeleteScript('${s.id}')" class="min-h-[40px] px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold flex items-center gap-1" title="Hapus Naskah (Khusus Guru)">
                   <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Hapus
                 </button>
               </div>
