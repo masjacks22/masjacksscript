@@ -2,17 +2,19 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Masjacks ScriptStudio — Collaborative Screenplay & Ad Script Editor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#1d4ed8" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <title>Masjacks ScriptStudio — Studio Penulisan Naskah Film & Iklan</title>
 
-  <!-- PWA Manifest via Data URI (Single-File PWA) -->
-  <link rel="manifest" href='data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Masjacks%20ScriptStudio%22%2C%22short_name%22%3A%22ScriptStudio%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23F1F5F9%22%2C%22theme_color%22%3A%22%232563EB%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%2520viewBox%3D%270%200%20100%20100%27%253E%253Crect%2520width%3D%27100%27%2520height%3D%27100%27%2520rx%3D%2720%27%2520fill%3D%27%25232563EB%27%2F%253E%253Ctext%2520x%3D%2750%27%2520y%3D%2768%27%2520font-size%3D%2755%27%2520text-anchor%3D%27middle%27%2520fill%3D%27white%27%2520font-family%3D%27monospace%27%253ES%253C%2Ftext%253E%253C%2Fsvg%253E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D' />
-  <meta name="theme-color" content="#2563EB" />
+  <!-- Dynamic PWA Manifest -->
+  <link rel="manifest" href="data:application/manifest+json,{&quot;name&quot;:&quot;Masjacks ScriptStudio&quot;,&quot;short_name&quot;:&quot;ScriptStudio&quot;,&quot;start_url&quot;:&quot;.&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;#f8fafc&quot;,&quot;theme_color&quot;:&quot;#1d4ed8&quot;}" />
 
-  <!-- Fonts: Plus Jakarta Sans (UI) & Courier Prime (Screenplay Industry Standard) -->
+  <!-- Google Fonts: Plus Jakarta Sans (UI) & Courier Prime (Standar Skenario) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -20,484 +22,527 @@
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
-  <!-- html2pdf.js untuk Direct Export PDF -->
+  <!-- html2pdf.js untuk Export PDF Ukuran A4 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <style>
-    /* Full Page Blogger Override tanpa edit XML */
-    html, body {
-      margin: 0 !important;
-      padding: 0 !important;
-      width: 100% !important;
-      height: 100% !important;
-      overflow: hidden !important;
-      background-color: #F1F5F9 !important;
-      font-family: 'Plus Jakarta Sans', sans-serif !important;
-      color: #0F172A;
+    * {
+      box-sizing: border-box;
     }
 
-    #masjacks-scriptstudio-root {
-      position: fixed;
-      inset: 0;
-      z-index: 99999;
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #f1f5f9;
+      color: #0f172a;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .screenplay-font {
+      font-family: 'Courier Prime', 'Courier New', Courier, monospace;
+    }
+
+    /* KERTAS STANDAR A4 (210mm x 297mm) */
+    .a4-sheet {
+      width: 100%;
+      max-width: 210mm;
+      min-height: 297mm;
+      background: #ffffff;
+      color: #000000;
+      border: 1px solid #cbd5e1;
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
+      padding: 20mm 20mm 24mm 25mm;
+      position: relative;
+    }
+
+    .a4-cover-sheet {
       display: flex;
       flex-direction: column;
-      background-color: #F1F5F9;
-      overflow: hidden;
-    }
-
-    /* Glassmorphism Utilities */
-    .glass-panel {
-      background: rgba(255, 255, 255, 0.9);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-    }
-
-    /* Screenplay Paper & Courier Prime Formatting */
-    .screenplay-font {
-      font-family: 'Courier Prime', 'Courier New', Courier, monospace !important;
-      line-height: 1.25 !important;
-      letter-spacing: 0 !important;
-    }
-
-    .script-paper {
-      background: #FFFFFF;
-      width: 100%;
-      max-width: 816px;
-      min-height: 1056px;
-      box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.05);
-      border: 1px solid #E2E8F0;
-      padding: 56px 64px;
-      transition: transform 0.2s ease;
+      justify-content: space-between;
+      align-items: center;
+      text-align: center;
+      padding: 22mm 20mm;
     }
 
     @media (max-width: 767px) {
-      .script-paper {
-        padding: 28px 20px;
-        min-height: 75vh;
+      .a4-sheet {
+        min-height: 440px;
+        padding: 18px 14px 24px 16px;
+      }
+      .a4-cover-sheet {
+        min-height: 460px;
+        padding: 24px 16px;
       }
     }
 
-    /* Standar Margin Elemen Skenario Final Draft / WriterDuet */
-    .el-scene {
-      font-weight: 700;
-      text-transform: uppercase;
-      margin-top: 20px;
-      margin-bottom: 8px;
-      width: 100%;
-      text-align: left;
-    }
-
-    .el-action {
-      font-weight: 400;
-      margin-top: 8px;
-      margin-bottom: 8px;
-      width: 100%;
-      text-align: left;
-    }
-
-    .el-character {
-      font-weight: 700;
-      text-transform: uppercase;
-      margin-top: 14px;
-      margin-bottom: 2px;
-      margin-left: 34%;
-      width: 56%;
-      text-align: left;
-    }
-
-    .el-parenthetical {
-      font-weight: 400;
-      font-style: italic;
-      margin-top: 0px;
-      margin-bottom: 2px;
-      margin-left: 26%;
-      width: 48%;
-      text-align: left;
-    }
-
-    .el-dialogue {
-      font-weight: 400;
-      margin-top: 0px;
-      margin-bottom: 10px;
-      margin-left: 18%;
-      width: 64%;
-      text-align: left;
-    }
-
-    .el-transition {
-      font-weight: 700;
-      text-transform: uppercase;
-      margin-top: 14px;
-      margin-bottom: 14px;
-      width: 100%;
-      text-align: right;
-    }
-
-    .el-shot {
-      font-weight: 700;
-      text-transform: uppercase;
-      margin-top: 12px;
-      margin-bottom: 6px;
-      width: 100%;
-      text-align: left;
-      color: #1E40AF;
-    }
-
-    @media (max-width: 640px) {
-      .el-character { margin-left: 24%; width: 70%; }
-      .el-parenthetical { margin-left: 16%; width: 68%; }
-      .el-dialogue { margin-left: 10%; width: 82%; }
-    }
-
+    /* AUTO-RESIZE TEXTAREA SKENARIO (ANTI TERPOTONG) */
     .script-textarea {
-      resize: none;
-      overflow: hidden;
-      background: transparent;
+      display: block;
       border: none;
       outline: none;
-      padding: 6px 8px;
+      background: transparent;
+      resize: none;
+      overflow: hidden;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      line-height: 1.45;
+      padding: 4px 6px;
       border-radius: 6px;
+      min-height: 30px;
+      font-family: inherit;
+      font-size: inherit;
       color: #000000;
-      display: block;
     }
 
     .script-textarea:focus {
-      background-color: #EEF2FF;
-      box-shadow: inset 0 0 0 1.5px #2563EB;
+      background: rgba(239, 246, 255, 0.7);
     }
 
-    .script-textarea[readonly] {
-      cursor: default;
-    }
-    .script-textarea[readonly]:focus {
-      background-color: transparent;
-      box-shadow: none;
-    }
-
-    /* Responsif Desktop Sidebar vs Mobile Bottom Nav */
-    @media (min-width: 768px) {
-      #desktop-sidebar { display: flex; }
-      #mobile-bottom-nav { display: none; }
-      #main-scroll-area { padding-bottom: 32px; }
+    /* TATA LETAK ELEMEN SKENARIO STANDAR INDUSTRI */
+    .el-scene {
+      width: 100%;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-top: 8px;
     }
 
-    @media (max-width: 767px) {
-      #desktop-sidebar { display: none !important; }
-      #mobile-bottom-nav { display: flex; }
-      #main-scroll-area { padding-bottom: 92px; }
+    .el-action {
+      width: 100%;
+      font-weight: 400;
     }
 
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar { width: 7px; height: 7px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 9999px; }
-    ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+    .el-character {
+      margin-left: 34%;
+      width: 66%;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-top: 8px;
+    }
 
-    /* Print Stylesheet */
+    .el-parenthetical {
+      margin-left: 26%;
+      width: 60%;
+      font-style: italic;
+    }
+
+    .el-dialogue {
+      margin-left: 15%;
+      width: 72%;
+      margin-bottom: 6px;
+    }
+
+    .el-transition {
+      width: 100%;
+      font-weight: 700;
+      text-transform: uppercase;
+      text-align: right;
+      margin-top: 8px;
+      margin-bottom: 8px;
+    }
+
+    .el-shot {
+      width: 100%;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #1e3a8a;
+      margin-top: 6px;
+    }
+
+    @media (max-width: 640px) {
+      .el-character {
+        margin-left: 20%;
+        width: 80%;
+      }
+      .el-parenthetical {
+        margin-left: 12%;
+        width: 82%;
+      }
+      .el-dialogue {
+        margin-left: 6%;
+        width: 90%;
+      }
+    }
+
+    /* MODAL & OVERLAY BERSIH TANPA KONFLIK DISPLAY */
+    .overlay-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 99990;
+    }
+
+    .overlay-modal.hidden {
+      display: none !important;
+    }
+
+    #pid-presentation-modal {
+      display: flex;
+      flex-direction: column;
+      background-color: #ffffff !important;
+      color: #0f172a !important;
+    }
+
+    #confirm-modal {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      padding: 16px;
+    }
+
     @media print {
-      body * { visibility: hidden; }
-      #print-export-sheet, #print-export-sheet * { visibility: visible; }
+      body * {
+        visibility: hidden;
+      }
+      #print-export-sheet, #print-export-sheet * {
+        visibility: visible;
+      }
       #print-export-sheet {
-        position: fixed;
+        position: absolute;
         left: 0;
         top: 0;
         width: 100%;
-        background: #FFFFFF;
-        padding: 0;
-        margin: 0;
+        display: block !important;
       }
     }
   </style>
 </head>
-<body>
-  <div id="masjacks-scriptstudio-root">
-    <!-- Banner Mode Preview (Hanya dirender jika IS_PREVIEW === true) -->
-    <div id="preview-banner-slot"></div>
+<body class="min-h-screen flex flex-col bg-slate-100 text-slate-900">
+  <!-- Banner Status Preview (Otomatis kosong saat IS_PREVIEW = false) -->
+  <div id="preview-banner-slot"></div>
 
-    <!-- Layout Utama -->
-    <div class="flex flex-1 min-h-0 overflow-hidden">
-      <!-- DESKTOP / PID FIXED SIDEBAR -->
-      <aside id="desktop-sidebar" class="w-64 flex-col justify-between bg-white border-r border-slate-200 transition-all duration-200 shrink-0 z-20">
-        <div>
-          <!-- Brand Header -->
-          <div class="p-4 border-b border-slate-200 flex items-center justify-between">
-            <div class="flex items-center gap-3 overflow-hidden">
-              <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-sm">
-                <i data-lucide="clapperboard" class="w-5 h-5"></i>
-              </div>
-              <div class="sidebar-label truncate">
-                <div class="font-extrabold text-slate-900 text-sm tracking-tight">ScriptStudio</div>
-                <div class="text-[11px] font-medium text-slate-500">by Masjacks • Live Co-Edit</div>
-              </div>
-            </div>
-            <button onclick="toggleSidebar()" title="Sembunyikan/Perlebar Sidebar" class="p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900 min-h-[40px] min-w-[40px] flex items-center justify-center">
-              <i data-lucide="panel-left-close" class="w-4 h-4"></i>
-            </button>
+  <!-- HEADER KHUSUS TAMPILAN HP (MENAMPILKAN NAMA APLIKASI & GURU PENGAJAR DI AWAL) -->
+  <header class="md:hidden w-full bg-white border-b border-slate-200 px-3.5 py-2.5 flex items-center justify-between gap-2 shadow-xs">
+    <div class="flex items-center gap-2.5 min-w-0">
+      <div class="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+        <i data-lucide="clapperboard" class="w-5 h-5"></i>
+      </div>
+      <div class="min-w-0">
+        <div class="font-extrabold text-sm text-slate-900 tracking-tight truncate">Masjacks ScriptStudio</div>
+        <div class="text-[11px] font-bold text-blue-700 truncate">Guru: Ja'far Shodiq, S.Kom., MM</div>
+      </div>
+    </div>
+    <button
+      type="button"
+      id="mobile-header-role-btn"
+      onclick="switchTab('teacher')"
+      class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-blue-50 text-slate-800 border border-slate-200 text-[11px] font-bold flex items-center gap-1 shrink-0"
+    >
+      <i data-lucide="award" class="w-3.5 h-3.5 text-blue-600"></i>
+      <span id="mobile-role-label">Login Guru</span>
+    </button>
+  </header>
+
+  <!-- MAIN SHELL: SIDEBAR DESKTOP + CONTENT WORKSPACE (NORMAL FLOW TANPA OVERFLOW TERJEBAK) -->
+  <div class="flex-1 flex flex-col md:flex-row w-full">
+    <!-- DESKTOP COLLAPSIBLE SIDEBAR -->
+    <aside id="desktop-sidebar" class="hidden md:flex flex-col w-64 bg-white border-r border-slate-200 shrink-0 md:sticky md:top-0 md:h-screen transition-all duration-200 z-20">
+      <!-- Brand Header -->
+      <div class="p-4 border-b border-slate-100 flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+            <i data-lucide="clapperboard" class="w-5 h-5"></i>
           </div>
-
-          <!-- Primary CTA -->
-          <div class="p-3">
-            <button onclick="createNewScript()" class="w-full min-h-[46px] bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-semibold text-sm rounded-xl px-4 flex items-center justify-center gap-2 shadow-sm transition">
-              <i data-lucide="plus-circle" class="w-5 h-5 shrink-0"></i>
-              <span class="sidebar-label">Naskah Baru</span>
-            </button>
-          </div>
-
-          <!-- Navigation Menu -->
-          <nav class="px-3 space-y-1.5 mt-1">
-            <button onclick="switchTab('gallery')" data-nav="gallery" class="nav-btn w-full min-h-[46px] px-3.5 rounded-xl flex items-center gap-3 text-sm font-semibold transition">
-              <i data-lucide="layout-grid" class="w-5 h-5 shrink-0"></i>
-              <span class="sidebar-label">Galeri Naskah</span>
-            </button>
-            <button onclick="switchTab('editor')" data-nav="editor" class="nav-btn w-full min-h-[46px] px-3.5 rounded-xl flex items-center gap-3 text-sm font-semibold transition">
-              <i data-lucide="file-pen-line" class="w-5 h-5 shrink-0"></i>
-              <span class="sidebar-label">Studio Editor</span>
-            </button>
-            <button onclick="switchTab('breakdown')" data-nav="breakdown" class="nav-btn w-full min-h-[46px] px-3.5 rounded-xl flex items-center gap-3 text-sm font-semibold transition">
-              <i data-lucide="list-video" class="w-5 h-5 shrink-0"></i>
-              <span class="sidebar-label">Scene & Cast</span>
-            </button>
-            <button onclick="switchTab('teacher')" data-nav="teacher" class="nav-btn w-full min-h-[46px] px-3.5 rounded-xl flex items-center gap-3 text-sm font-semibold transition">
-              <i data-lucide="award" class="w-5 h-5 shrink-0"></i>
-              <span class="sidebar-label">Penilaian Guru</span>
-            </button>
-          </nav>
-        </div>
-
-        <!-- Status Role Footer -->
-        <div class="p-3 border-t border-slate-200 bg-slate-50/70">
-          <div id="sidebar-role-card" class="p-2.5 rounded-xl bg-white border border-slate-200 flex items-center justify-between gap-2">
-            <div class="flex items-center gap-2.5 overflow-hidden">
-              <div id="role-avatar" class="w-8 h-8 rounded-lg bg-slate-200 text-slate-700 flex items-center justify-center shrink-0 font-bold text-xs">
-                SW
-              </div>
-              <div class="sidebar-label truncate">
-                <div id="role-title" class="text-xs font-bold text-slate-900 truncate">Mode Siswa (Terbuka)</div>
-                <div id="role-subtitle" class="text-[11px] text-slate-500 truncate">Tanpa Login</div>
-              </div>
-            </div>
-            <button id="sidebar-auth-btn" onclick="switchTab('teacher')" title="Login Guru" class="p-2 rounded-lg text-blue-600 hover:bg-blue-50 shrink-0">
-              <i data-lucide="log-in" class="w-4 h-4"></i>
-            </button>
+          <div class="sidebar-label min-w-0">
+            <div class="font-extrabold text-sm text-slate-900 truncate">Masjacks ScriptStudio</div>
+            <div class="text-[11px] font-semibold text-blue-700 truncate">Ja'far Shodiq, S.Kom., MM</div>
           </div>
         </div>
-      </aside>
+        <button type="button" onclick="toggleSidebar()" title="Perkecil / Perbesar Sidebar" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 shrink-0">
+          <i data-lucide="panel-left-close" class="w-4 h-4"></i>
+        </button>
+      </div>
 
-      <!-- MAIN CONTENT WORKSPACE -->
-      <main id="main-scroll-area" class="flex-1 overflow-y-auto relative">
-        <!-- VIEW 1: HALAMAN DEPAN (GALERI NASKAH SISWA + MENU SEARCH NAMA DI AWAL) -->
-        <section id="view-gallery" class="max-w-7xl mx-auto p-4 md:p-6 space-y-5">
-          <!-- Header Hero -->
-          <div class="glass-panel rounded-2xl border border-slate-200 p-5 md:p-6 shadow-sm flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div>
-              <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold mb-2">
-                <i data-lucide="users" class="w-3.5 h-3.5"></i>
-                <span>Kolaborasi Real-Time • Tanpa Login Siswa</span>
-              </div>
-              <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">Galeri Karya Naskah Siswa</h1>
-              <p class="text-sm text-slate-600 mt-1">Cari namamu di kotak pencarian di bawah untuk melanjutkan draf kelompok, atau klik <strong>Buat Naskah Baru</strong>.</p>
+      <!-- Navigation Links -->
+      <nav class="flex-1 p-3 space-y-1.5 overflow-y-auto">
+        <button type="button" onclick="switchTab('gallery')" data-nav="gallery" class="nav-btn w-full min-h-[44px] px-3.5 rounded-xl flex items-center gap-3 text-sm font-bold transition">
+          <i data-lucide="layout-grid" class="w-5 h-5 shrink-0"></i>
+          <span class="sidebar-label truncate">Galeri Karya Siswa</span>
+        </button>
+
+        <button type="button" onclick="switchTab('editor')" data-nav="editor" class="nav-btn w-full min-h-[44px] px-3.5 rounded-xl flex items-center gap-3 text-sm font-bold transition">
+          <i data-lucide="file-pen-line" class="w-5 h-5 shrink-0"></i>
+          <span class="sidebar-label truncate">Studio Editor A4</span>
+        </button>
+
+        <button type="button" onclick="switchTab('breakdown')" data-nav="breakdown" class="nav-btn w-full min-h-[44px] px-3.5 rounded-xl flex items-center gap-3 text-sm font-bold transition">
+          <i data-lucide="list-video" class="w-5 h-5 shrink-0"></i>
+          <span class="sidebar-label truncate">Scene & Cast Breakdown</span>
+        </button>
+
+        <button type="button" onclick="switchTab('teacher')" data-nav="teacher" class="nav-btn w-full min-h-[44px] px-3.5 rounded-xl flex items-center gap-3 text-sm font-bold transition">
+          <i data-lucide="award" class="w-5 h-5 shrink-0"></i>
+          <span class="sidebar-label truncate">Panel Penilaian Guru</span>
+        </button>
+
+        <div class="pt-3 mt-3 border-t border-slate-100">
+          <button type="button" onclick="createNewScript()" class="w-full min-h-[44px] px-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-3 text-sm font-bold shadow-sm transition">
+            <i data-lucide="plus-circle" class="w-5 h-5 shrink-0"></i>
+            <span class="sidebar-label truncate">Buat Naskah Baru</span>
+          </button>
+        </div>
+      </nav>
+
+      <!-- Active Role Status Footer -->
+      <div class="p-3 border-t border-slate-100">
+        <div onclick="switchTab('teacher')" class="cursor-pointer p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 flex items-center gap-2.5 transition">
+          <div id="role-avatar" class="w-8 h-8 rounded-lg bg-slate-200 text-slate-700 flex items-center justify-center shrink-0 font-bold text-xs">SW</div>
+          <div class="sidebar-label min-w-0">
+            <div id="role-title" class="text-xs font-extrabold text-slate-800 truncate">Mode Siswa (Terbuka)</div>
+            <div id="role-subtitle" class="text-[11px] text-slate-500 truncate">Tanpa Login</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT WORKSPACE -->
+    <main id="main-scroll-area" class="flex-1 min-w-0 pb-28 md:pb-12">
+      <!-- VIEW 1: GALERI KARYA SISWA + MENU SEARCH NAMA DI AWAL -->
+      <section id="view-gallery" class="max-w-7xl mx-auto p-4 md:p-6 space-y-5">
+        <!-- Header Hero dengan Identitas Aplikasi & Guru Pengajar -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 md:p-6 shadow-sm flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div class="space-y-1.5">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-600 text-white text-xs font-extrabold shadow-xs">
+                <i data-lucide="clapperboard" class="w-3.5 h-3.5"></i>
+                <span>Masjacks ScriptStudio</span>
+              </span>
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 text-indigo-800 border border-indigo-200 text-xs font-bold">
+                <i data-lucide="graduation-cap" class="w-3.5 h-3.5 text-indigo-600"></i>
+                <span>Guru Pengajar: Ja'far Shodiq, S.Kom., MM</span>
+              </span>
             </div>
-            <div class="flex flex-wrap items-center gap-2.5">
-              <button onclick="createNewScript()" class="min-h-[46px] px-5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl flex items-center gap-2 shadow-sm transition">
-                <i data-lucide="plus" class="w-5 h-5"></i>
-                <span>Buat Naskah Baru</span>
-              </button>
-              <button onclick="switchTab('teacher')" id="gallery-teacher-btn" class="min-h-[46px] px-4 bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 font-semibold text-sm rounded-xl flex items-center gap-2 transition">
-                <i data-lucide="award" class="w-4 h-4 text-blue-600"></i>
-                <span>Login & Nilai Guru</span>
-              </button>
-            </div>
+            <h1 class="text-xl md:text-3xl font-extrabold text-slate-900 tracking-tight pt-1">Galeri Karya Naskah Siswa</h1>
+            <p class="text-xs md:text-sm text-slate-600">Cari namamu di kotak pencarian di bawah untuk melanjutkan draf kelompok, atau klik <strong>Buat Naskah Baru</strong>.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2.5">
+            <button type="button" onclick="createNewScript()" class="min-h-[44px] px-4 md:px-5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs md:text-sm rounded-xl flex items-center gap-2 shadow-sm transition">
+              <i data-lucide="plus" class="w-4 h-4 md:w-5 md:h-5"></i>
+              <span>Buat Naskah Baru</span>
+            </button>
+            <button type="button" onclick="switchTab('teacher')" id="gallery-teacher-btn" class="min-h-[44px] px-4 bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 font-semibold text-xs md:text-sm rounded-xl flex items-center gap-2 transition">
+              <i data-lucide="award" class="w-4 h-4 text-blue-600"></i>
+              <span>Login & Nilai Guru</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- MENU SEARCH UTAMA (CARI NAMA SISWA / KELOMPOK SAAT DI AWAL) -->
+        <div class="bg-white rounded-2xl border-2 border-blue-200 p-4 md:p-5 shadow-sm space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <label for="filter-search" class="text-xs md:text-sm font-extrabold text-blue-900 flex items-center gap-2">
+              <i data-lucide="user-search" class="w-4 h-4 text-blue-600"></i>
+              <span>Cari Nama Siswa, Kelompok, Kelas, atau Judul Naskah:</span>
+            </label>
+            <span id="search-result-counter" class="text-xs font-bold px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700">Menampilkan 0 naskah</span>
           </div>
 
-          <!-- MENU SEARCH UTAMA (CARI NAMA SISWA / KELOMPOK SAAT DI AWAL) -->
-          <div class="bg-white rounded-2xl border-2 border-blue-200 p-4 md:p-5 shadow-sm space-y-3">
-            <div class="flex flex-wrap items-center justify-between gap-2">
-              <label for="filter-search" class="text-xs md:text-sm font-extrabold text-blue-900 flex items-center gap-2">
-                <i data-lucide="user-search" class="w-4 h-4 text-blue-600"></i>
-                <span>Cari Nama Siswa, Kelompok, Kelas, atau Judul Naskah:</span>
-              </label>
-              <span id="search-result-counter" class="text-xs font-bold px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700">Menampilkan 0 naskah</span>
-            </div>
-
-            <div class="flex flex-col md:flex-row gap-3">
-              <div class="relative flex-1">
-                <i data-lucide="search" class="w-5 h-5 text-blue-600 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
-                <input
-                  id="filter-search"
-                  oninput="handleSearchInput()"
-                  type="text"
-                  placeholder="Ketik namamu di sini (contoh: Raka, Kelompok 1, XII DKV 1, atau judul film)..."
-                  class="w-full min-h-[48px] pl-11 pr-11 rounded-xl border-2 border-slate-200 text-sm md:text-base font-medium text-slate-900 focus:outline-none focus:border-blue-600 bg-slate-50/50 focus:bg-white transition"
-                />
-                <button
-                  id="clear-search-btn"
-                  onclick="clearSearchInput()"
-                  type="button"
-                  title="Hapus Pencarian"
-                  class="hidden absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center"
-                >
-                  <i data-lucide="x" class="w-4 h-4"></i>
-                </button>
-              </div>
-
-              <select id="filter-status" onchange="renderGallery()" class="min-h-[48px] px-3.5 rounded-xl border border-slate-300 text-sm font-semibold text-slate-700 bg-white focus:outline-none focus:border-blue-600">
-                <option value="ALL">Semua Status</option>
-                <option value="Draft">Status: Draft (Bisa Diedit)</option>
-                <option value="Finish">Status: Finish (Terkunci)</option>
-                <option value="GRADED">Sudah Dinilai Guru</option>
-              </select>
-
-              <select id="filter-format" onchange="renderGallery()" class="min-h-[48px] px-3.5 rounded-xl border border-slate-300 text-sm font-semibold text-slate-700 bg-white focus:outline-none focus:border-blue-600">
-                <option value="ALL">Semua Format</option>
-                <option value="Film Pendek">Film Pendek</option>
-                <option value="Video Iklan (TVC)">Video Iklan (TVC)</option>
-                <option value="Film Fitur">Film Fitur</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Statistik Ringkas -->
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-            <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
-              <div class="text-xs font-semibold text-slate-500">Total Karya</div>
-              <div id="stat-total" class="text-2xl md:text-3xl font-extrabold text-slate-900 mt-1">0</div>
-            </div>
-            <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
-              <div class="text-xs font-semibold text-amber-700">Draft (Aktif Diedit)</div>
-              <div id="stat-draft" class="text-2xl md:text-3xl font-extrabold text-amber-600 mt-1">0</div>
-            </div>
-            <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
-              <div class="text-xs font-semibold text-emerald-700">Finish (Terkunci)</div>
-              <div id="stat-finish" class="text-2xl md:text-3xl font-extrabold text-emerald-600 mt-1">0</div>
-            </div>
-            <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
-              <div class="text-xs font-semibold text-indigo-700">Sudah Dinilai Guru</div>
-              <div id="stat-graded" class="text-2xl md:text-3xl font-extrabold text-indigo-600 mt-1">0</div>
-            </div>
-          </div>
-
-          <!-- Grid Daftar Karya Siswa -->
-          <div id="gallery-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
-        </section>
-
-        <!-- VIEW 2: STUDIO EDITOR NASKAH (WRITERDUET / FINAL DRAFT STYLE + LIVE CO-EDITING) -->
-        <section id="view-editor" class="hidden flex-col min-h-full">
-          <!-- Top Action Bar (Sticky) -->
-          <div class="sticky top-0 z-30 glass-panel border-b border-slate-200 px-3 md:px-6 py-2.5 shadow-sm">
-            <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-2">
-              <div class="flex items-center gap-2 flex-wrap">
-                <button onclick="switchTab('gallery')" class="min-h-[42px] px-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs md:text-sm flex items-center gap-1.5">
-                  <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                  <span>Galeri</span>
-                </button>
-                <div id="editor-status-badge"></div>
-
-                <!-- Indikator Live Co-Editing Sync -->
-                <span id="live-sync-pill" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-[11px] font-bold">
-                  <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                  <span id="live-sync-text">Live Sync Siap</span>
-                </span>
-
-                <span id="editor-duration-badge" class="hidden lg:inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 text-xs font-bold">
-                  <i data-lucide="clock" class="w-3.5 h-3.5 text-blue-600"></i>
-                  <span id="duration-text">~1 Hal • ±1 Menit</span>
-                </span>
-              </div>
-
-              <!-- Action Buttons -->
-              <div class="flex flex-wrap items-center gap-2">
-                <!-- Zoom Controls untuk PID -->
-                <div class="hidden xl:flex items-center bg-slate-100 rounded-xl p-1 border border-slate-200">
-                  <button onclick="changeZoom(-10)" title="Perkecil Tampilan" class="w-8 h-8 rounded-lg hover:bg-white flex items-center justify-center text-slate-700 font-bold">-</button>
-                  <span id="zoom-label" class="px-2 text-xs font-bold text-slate-700">100%</span>
-                  <button onclick="changeZoom(10)" title="Perbesar untuk PID" class="w-8 h-8 rounded-lg hover:bg-white flex items-center justify-center text-slate-700 font-bold">+</button>
-                </div>
-
-                <button onclick="togglePresentationMode()" class="min-h-[42px] px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs md:text-sm font-semibold flex items-center gap-1.5" title="Mode Baca Layar Penuh PID">
-                  <i data-lucide="monitor-play" class="w-4 h-4"></i>
-                  <span class="hidden sm:inline">Mode PID</span>
-                </button>
-
-                <button onclick="exportCurrentScriptToPDF()" class="min-h-[42px] px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs md:text-sm font-semibold flex items-center gap-1.5" title="Unduh File PDF Standar Industri">
-                  <i data-lucide="file-down" class="w-4 h-4"></i>
-                  <span>Export PDF</span>
-                </button>
-
-                <button id="btn-save-draft" onclick="saveScript('Draft')" class="min-h-[42px] px-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs md:text-sm font-bold flex items-center gap-1.5 shadow-sm">
-                  <i data-lucide="save" class="w-4 h-4"></i>
-                  <span>Simpan Draft</span>
-                </button>
-
-                <button id="btn-finish-script" onclick="confirmFinishScript()" class="min-h-[42px] px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs md:text-sm font-bold flex items-center gap-1.5 shadow-sm">
-                  <i data-lucide="check-circle-2" class="w-4 h-4"></i>
-                  <span>Finish</span>
-                </button>
-
-                <!-- Tombol Delete HANYA dirender / tampil jika Guru sudah login -->
-                <button id="btn-delete-editor" onclick="confirmDeleteScript(currentScript?.id)" class="hidden min-h-[42px] px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs md:text-sm font-semibold flex items-center gap-1" title="Hapus Naskah (Khusus Guru)">
-                  <i data-lucide="trash-2" class="w-4 h-4"></i>
-                </button>
-              </div>
-            </div>
-
-            <!-- PID Screenplay Element Toolbar (Wide Touch Targets) -->
-            <div id="pid-element-toolbar" class="max-w-6xl mx-auto mt-2.5 pt-2.5 border-t border-slate-200/80 flex items-center gap-1.5 overflow-x-auto pb-1">
-              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mr-1 shrink-0">Elemen:</span>
-              <button onclick="setActiveBlockType('scene')" data-el-btn="scene" class="el-type-btn min-h-[40px] px-3 rounded-xl text-xs font-bold border transition shrink-0">SCENE</button>
-              <button onclick="setActiveBlockType('action')" data-el-btn="action" class="el-type-btn min-h-[40px] px-3 rounded-xl text-xs font-bold border transition shrink-0">ACTION</button>
-              <button onclick="setActiveBlockType('character')" data-el-btn="character" class="el-type-btn min-h-[40px] px-3 rounded-xl text-xs font-bold border transition shrink-0">CHARACTER</button>
-              <button onclick="setActiveBlockType('parenthetical')" data-el-btn="parenthetical" class="el-type-btn min-h-[40px] px-3 rounded-xl text-xs font-bold border transition shrink-0">PAREN ( )</button>
-              <button onclick="setActiveBlockType('dialogue')" data-el-btn="dialogue" class="el-type-btn min-h-[40px] px-3 rounded-xl text-xs font-bold border transition shrink-0">DIALOGUE</button>
-              <button onclick="setActiveBlockType('transition')" data-el-btn="transition" class="el-type-btn min-h-[40px] px-3 rounded-xl text-xs font-bold border transition shrink-0">TRANSITION</button>
-              <button onclick="setActiveBlockType('shot')" data-el-btn="shot" class="el-type-btn min-h-[40px] px-3 rounded-xl text-xs font-bold border transition shrink-0">SHOT / CAM</button>
-              <div class="h-5 w-[1px] bg-slate-200 mx-1 shrink-0"></div>
-              <button onclick="addNewBlockAfterActive()" class="min-h-[40px] px-3 rounded-xl bg-slate-900 text-white text-xs font-bold flex items-center gap-1 shrink-0 hover:bg-slate-800">
-                <i data-lucide="plus" class="w-3.5 h-3.5"></i> Baris Baru
+          <div class="flex flex-col md:flex-row gap-3">
+            <div class="relative flex-1">
+              <i data-lucide="search" class="w-5 h-5 text-blue-600 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+              <input
+                id="filter-search"
+                oninput="handleSearchInput()"
+                type="text"
+                placeholder="Ketik namamu di sini (contoh: Raka, Kelompok 1, XII DKV 1, atau judul film)..."
+                class="w-full min-h-[48px] pl-11 pr-11 rounded-xl border-2 border-slate-200 text-sm md:text-base font-medium text-slate-900 focus:outline-none focus:border-blue-600 bg-slate-50/50 focus:bg-white transition"
+              />
+              <button
+                id="clear-search-btn"
+                onclick="clearSearchInput()"
+                type="button"
+                title="Hapus Pencarian"
+                class="hidden absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 items-center justify-center"
+              >
+                <i data-lucide="x" class="w-4 h-4"></i>
               </button>
             </div>
 
-            <!-- Smart Auto-Complete Chips Bar untuk Layar Sentuh PID -->
-            <div id="smart-chips-bar" class="max-w-6xl mx-auto mt-2 flex items-center gap-1.5 overflow-x-auto pb-0.5"></div>
-          </div>
+            <select id="filter-status" onchange="renderGallery()" class="min-h-[48px] px-3.5 rounded-xl border border-slate-300 text-sm font-semibold text-slate-700 bg-white focus:outline-none focus:border-blue-600">
+              <option value="ALL">Semua Status</option>
+              <option value="Draft">Status: Draft (Bisa Diedit)</option>
+              <option value="Finish">Status: Finish (Terkunci)</option>
+              <option value="GRADED">Sudah Dinilai Guru</option>
+            </select>
 
-          <!-- Locked Banner jika status === 'Finish' -->
-          <div id="locked-banner" class="hidden bg-emerald-50 border-b border-emerald-200 px-4 py-2.5 text-center text-xs md:text-sm font-semibold text-emerald-900">
-            <span class="inline-flex items-center gap-2">
-              <i data-lucide="lock" class="w-4 h-4 text-emerald-600"></i>
-              <span>Naskah ini berstatus <strong>FINISH (Terkunci Permanen)</strong>. Isi naskah tidak dapat diubah lagi oleh siswa.</span>
-            </span>
+            <select id="filter-format" onchange="renderGallery()" class="min-h-[48px] px-3.5 rounded-xl border border-slate-300 text-sm font-semibold text-slate-700 bg-white focus:outline-none focus:border-blue-600">
+              <option value="ALL">Semua Format</option>
+              <option value="Film Pendek">Film Pendek</option>
+              <option value="Video Iklan (TVC)">Video Iklan (TVC)</option>
+              <option value="Film Fitur">Film Fitur</option>
+            </select>
           </div>
+        </div>
 
-          <!-- Paper Workspace Area -->
-          <div class="flex-1 p-4 md:p-8 flex flex-col items-center">
-            <!-- Metadata Kartu Identitas Karya (Title Page Info) -->
-            <div id="script-meta-card" class="w-full max-w-[816px] bg-white rounded-2xl border border-slate-200 p-4 md:p-6 mb-6 shadow-sm space-y-4">
-              <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
-                <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-blue-600">
-                  <i data-lucide="file-text" class="w-4 h-4"></i>
-                  <span>Informasi Halaman Judul & Sesi Kolaborasi</span>
-                </div>
-                <span class="text-[11px] text-slate-500 font-medium">Auto-Sync aktif per baris • Anti-Bentrok Kursor</span>
+        <!-- Statistik Ringkas -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+          <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+            <div class="text-xs font-semibold text-slate-500">Total Karya</div>
+            <div id="stat-total" class="text-2xl md:text-3xl font-extrabold text-slate-900 mt-1">0</div>
+          </div>
+          <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+            <div class="text-xs font-semibold text-amber-700">Draft (Aktif Diedit)</div>
+            <div id="stat-draft" class="text-2xl md:text-3xl font-extrabold text-amber-600 mt-1">0</div>
+          </div>
+          <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+            <div class="text-xs font-semibold text-emerald-700">Finish (Terkunci)</div>
+            <div id="stat-finish" class="text-2xl md:text-3xl font-extrabold text-emerald-600 mt-1">0</div>
+          </div>
+          <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+            <div class="text-xs font-semibold text-indigo-700">Sudah Dinilai Guru</div>
+            <div id="stat-graded" class="text-2xl md:text-3xl font-extrabold text-indigo-600 mt-1">0</div>
+          </div>
+        </div>
+
+        <!-- Grid Daftar Karya Siswa -->
+        <div id="gallery-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+      </section>
+
+      <!-- VIEW 2: STUDIO EDITOR NASKAH (KERTAS A4: HALAMAN 1 COVER + HALAMAN 2+ SCENE) -->
+      <section id="view-editor" class="hidden w-full">
+        <!-- Action & Element Bar (Normal flow di HP agar tidak menumpuk/menutupi layar, sticky hanya di Desktop) -->
+        <div class="md:sticky md:top-0 z-30 glass-panel border-b border-slate-200 px-3 md:px-6 py-2.5 shadow-sm">
+          <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2 flex-wrap">
+              <button type="button" onclick="switchTab('gallery')" class="min-h-[38px] px-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs md:text-sm flex items-center gap-1.5">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                <span>Galeri</span>
+              </button>
+              <div id="editor-status-badge"></div>
+
+              <!-- Indikator Live Co-Editing Sync -->
+              <span id="live-sync-pill" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-[11px] font-bold">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span id="live-sync-text">Live Sync Siap</span>
+              </span>
+
+              <span id="editor-duration-badge" class="hidden lg:inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 text-xs font-bold">
+                <i data-lucide="file-text" class="w-3.5 h-3.5 text-blue-600"></i>
+                <span id="duration-text">A4 • Cover + 1 Hal</span>
+              </span>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-wrap items-center gap-1.5 md:gap-2">
+              <!-- Zoom Controls untuk PID -->
+              <div class="hidden xl:flex items-center bg-slate-100 rounded-xl p-1 border border-slate-200">
+                <button type="button" onclick="changeZoom(-10)" title="Perkecil Tampilan" class="w-8 h-8 rounded-lg hover:bg-white flex items-center justify-center text-slate-700 font-bold">-</button>
+                <span id="zoom-label" class="px-2 text-xs font-bold text-slate-700">100%</span>
+                <button type="button" onclick="changeZoom(10)" title="Perbesar untuk PID" class="w-8 h-8 rounded-lg hover:bg-white flex items-center justify-center text-slate-700 font-bold">+</button>
               </div>
 
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div class="md:col-span-2">
-                  <label class="block text-xs font-bold text-slate-700 mb-1">Judul Film / Video Iklan *</label>
-                  <input id="meta-title" type="text" oninput="updateMetaField('title', this.value)" placeholder="Contoh: JEJAK DI BALIK LENSA" class="w-full min-h-[42px] px-3.5 rounded-xl border border-slate-200 font-bold uppercase text-sm focus:outline-none focus:border-blue-600" />
+              <button type="button" onclick="togglePresentationMode()" class="min-h-[38px] px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs md:text-sm font-semibold flex items-center gap-1.5" title="Mode Baca Layar Penuh PID">
+                <i data-lucide="monitor-play" class="w-4 h-4"></i>
+                <span>Mode PID</span>
+              </button>
+
+              <button type="button" onclick="exportCurrentScriptToPDF()" class="min-h-[38px] px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs md:text-sm font-semibold flex items-center gap-1.5" title="Unduh File PDF A4 Standar Industri">
+                <i data-lucide="file-down" class="w-4 h-4"></i>
+                <span>PDF</span>
+              </button>
+
+              <button type="button" id="btn-save-draft" onclick="saveScript('Draft')" class="min-h-[38px] px-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs md:text-sm font-bold flex items-center gap-1.5 shadow-sm">
+                <i data-lucide="save" class="w-4 h-4"></i>
+                <span>Simpan Draft</span>
+              </button>
+
+              <button type="button" id="btn-finish-script" onclick="confirmFinishScript()" class="min-h-[38px] px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs md:text-sm font-bold flex items-center gap-1.5 shadow-sm">
+                <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                <span>Finish</span>
+              </button>
+
+              <!-- Tombol Delete HANYA dirender / tampil jika Guru sudah login -->
+              <button type="button" id="btn-delete-editor" onclick="confirmDeleteScript(currentScript?.id)" class="hidden min-h-[38px] px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs md:text-sm font-semibold items-center gap-1" title="Hapus Naskah (Khusus Guru)">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- PID Screenplay Element Toolbar (Wide Touch Targets) -->
+          <div id="pid-element-toolbar" class="max-w-6xl mx-auto mt-2 pt-2 border-t border-slate-200/80 flex items-center gap-1.5 overflow-x-auto pb-1">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mr-1 shrink-0">Elemen:</span>
+            <button type="button" onclick="setActiveBlockType('scene')" data-el-btn="scene" class="el-type-btn min-h-[36px] px-3 rounded-xl text-xs font-bold border transition shrink-0">SCENE</button>
+            <button type="button" onclick="setActiveBlockType('action')" data-el-btn="action" class="el-type-btn min-h-[36px] px-3 rounded-xl text-xs font-bold border transition shrink-0">ACTION</button>
+            <button type="button" onclick="setActiveBlockType('character')" data-el-btn="character" class="el-type-btn min-h-[36px] px-3 rounded-xl text-xs font-bold border transition shrink-0">CHARACTER</button>
+            <button type="button" onclick="setActiveBlockType('parenthetical')" data-el-btn="parenthetical" class="el-type-btn min-h-[36px] px-3 rounded-xl text-xs font-bold border transition shrink-0">PAREN ( )</button>
+            <button type="button" onclick="setActiveBlockType('dialogue')" data-el-btn="dialogue" class="el-type-btn min-h-[36px] px-3 rounded-xl text-xs font-bold border transition shrink-0">DIALOGUE</button>
+            <button type="button" onclick="setActiveBlockType('transition')" data-el-btn="transition" class="el-type-btn min-h-[36px] px-3 rounded-xl text-xs font-bold border transition shrink-0">TRANSITION</button>
+            <button type="button" onclick="setActiveBlockType('shot')" data-el-btn="shot" class="el-type-btn min-h-[36px] px-3 rounded-xl text-xs font-bold border transition shrink-0">SHOT / CAM</button>
+            <div class="h-5 w-[1px] bg-slate-200 mx-1 shrink-0"></div>
+            <button type="button" onclick="addNewBlockAfterActive()" class="min-h-[36px] px-3 rounded-xl bg-slate-900 text-white text-xs font-bold flex items-center gap-1 shrink-0 hover:bg-slate-800">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i> Baris Baru
+            </button>
+          </div>
+
+          <!-- Smart Auto-Complete Chips Bar (Termasuk Menu Transisi) -->
+          <div id="smart-chips-bar" class="max-w-6xl mx-auto mt-2 flex items-center gap-1.5 overflow-x-auto pb-0.5"></div>
+
+          <!-- BUBBLE INFO PENJELAS TRANSISI (Muncul saat menu transisi dipilih / diklik) -->
+          <div id="transition-info-bubble" class="hidden max-w-6xl mx-auto mt-2 p-3 rounded-xl bg-indigo-950 text-white shadow-md border border-indigo-700">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex items-start gap-2.5 text-xs">
+                <div class="w-6 h-6 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0 mt-0.5">
+                  <i data-lucide="info" class="w-3.5 h-3.5"></i>
                 </div>
                 <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1">Format Produksi</label>
-                  <select id="meta-format" onchange="updateMetaField('formatType', this.value)" class="w-full min-h-[42px] px-3 rounded-xl border border-slate-200 text-sm font-semibold bg-white focus:outline-none focus:border-blue-600">
-                    <option value="Film Pendek">Film Pendek</option>
-                    <option value="Video Iklan (TVC)">Video Iklan (TVC)</option>
-                    <option value="Film Fitur">Film Fitur</option>
-                  </select>
+                  <div id="transition-bubble-title" class="font-extrabold text-amber-300 tracking-wide uppercase">CUT TO:</div>
+                  <p id="transition-bubble-desc" class="text-slate-100 leading-relaxed mt-0.5"></p>
                 </div>
               </div>
+              <button type="button" onclick="closeTransitionBubble()" class="p-1 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 shrink-0" title="Tutup Info">
+                <i data-lucide="x" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        </div>
 
-              <!-- Banner Deteksi Judul Sama untuk Gabung Kolaborasi Tanpa Bentrok -->
-              <div id="duplicate-title-alert" class="hidden p-3.5 rounded-xl bg-blue-50 border border-blue-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <!-- Locked Banner jika status === 'Finish' -->
+        <div id="locked-banner" class="hidden bg-emerald-50 border-b border-emerald-200 px-4 py-2.5 text-center text-xs md:text-sm font-semibold text-emerald-900">
+          <span class="inline-flex items-center gap-2">
+            <i data-lucide="lock" class="w-4 h-4 text-emerald-600"></i>
+            <span>Naskah ini berstatus <strong>FINISH (Terkunci Permanen)</strong>. Isi naskah tidak dapat diubah lagi oleh siswa.</span>
+          </span>
+        </div>
+
+        <!-- Paper Workspace Area (Format Kertas A4) -->
+        <div class="w-full p-3 md:p-8 flex flex-col items-center space-y-6">
+          <!-- Form Input Metadata Identitas Karya -->
+          <div id="script-meta-card" class="w-full max-w-[210mm] bg-white rounded-2xl border border-slate-200 p-4 md:p-6 shadow-sm space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+              <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-blue-600">
+                <i data-lucide="file-text" class="w-4 h-4"></i>
+                <span>Isian Halaman Cover (Halaman 1 • Format A4)</span>
+              </div>
+              <span class="text-[11px] text-slate-500 font-medium">Otomatis ditampilkan di tengah Halaman Cover A4</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div class="md:col-span-2">
+                <label class="block text-xs font-bold text-slate-700 mb-1">Judul Film / Video Iklan *</label>
+                <input id="meta-title" type="text" oninput="updateMetaField('title', this.value)" placeholder="Contoh: JEJAK DI BALIK LENSA" class="w-full min-h-[42px] px-3.5 rounded-xl border border-slate-200 font-bold uppercase text-sm focus:outline-none focus:border-blue-600" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Format Produksi</label>
+                <select id="meta-format" onchange="updateMetaField('formatType', this.value)" class="w-full min-h-[42px] px-3 rounded-xl border border-slate-200 text-sm font-semibold bg-white focus:outline-none focus:border-blue-600">
+                  <option value="Film Pendek">Film Pendek</option>
+                  <option value="Video Iklan (TVC)">Video Iklan (TVC)</option>
+                  <option value="Film Fitur">Film Fitur</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Banner Deteksi Judul Sama untuk Gabung Kolaborasi Tanpa Bentrok -->
+            <div id="duplicate-title-alert" class="hidden p-3.5 rounded-xl bg-blue-50 border border-blue-200">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div class="text-xs text-blue-950">
                   <div class="font-bold flex items-center gap-1.5 text-blue-800">
                     <i data-lucide="users" class="w-4 h-4"></i>
@@ -509,238 +554,273 @@
                   Gabung Edit Bersama
                 </button>
               </div>
+            </div>
 
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div class="md:col-span-2">
-                  <label class="block text-xs font-bold text-slate-700 mb-1">Nama Penulis / Kelompok Siswa *</label>
-                  <input id="meta-author" type="text" oninput="updateMetaField('authorName', this.value)" placeholder="Contoh: Kelompok 1 (Raka, Dinda, Dimas)" class="w-full min-h-[42px] px-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-blue-600" />
-                </div>
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1">Kelas / Tim</label>
-                  <input id="meta-kelas" type="text" oninput="updateMetaField('kelas', this.value)" placeholder="Contoh: XII DKV 1" class="w-full min-h-[42px] px-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-blue-600" />
-                </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div class="md:col-span-2">
+                <label class="block text-xs font-bold text-slate-700 mb-1">Nama Penulis / Kelompok Siswa *</label>
+                <input id="meta-author" type="text" oninput="updateMetaField('authorName', this.value)" placeholder="Contoh: Kelompok 1 (Raka, Dinda, Dimas)" class="w-full min-h-[42px] px-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-blue-600" />
               </div>
-
               <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">Logline / Premis Singkat</label>
-                <input id="meta-logline" type="text" oninput="updateMetaField('logline', this.value)" placeholder="Ringkasan cerita 1-2 kalimat..." class="w-full min-h-[40px] px-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-blue-600" />
-              </div>
-
-              <!-- Hasil Nilai & Catatan Guru (Jika sudah dinilai) -->
-              <div id="editor-teacher-note-box" class="hidden p-4 rounded-xl bg-indigo-50/80 border border-indigo-200 text-xs text-slate-800 space-y-2">
-                <div class="flex flex-wrap items-center justify-between gap-2">
-                  <div class="font-extrabold flex items-center gap-1.5 text-indigo-900">
-                    <i data-lucide="award" class="w-4 h-4 text-indigo-600"></i>
-                    <span>Hasil Penilaian & Evaluasi Guru:</span>
-                  </div>
-                  <div id="editor-score-pill"></div>
-                </div>
-                <p id="editor-teacher-note-text" class="leading-relaxed text-slate-700"></p>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Kelas / Tim</label>
+                <input id="meta-kelas" type="text" oninput="updateMetaField('kelas', this.value)" placeholder="Contoh: XII DKV 1" class="w-full min-h-[42px] px-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-blue-600" />
               </div>
             </div>
 
-            <!-- KERTAS SKENARIO UTAMA -->
-            <div id="script-paper-container" class="script-paper screenplay-font">
-              <!-- Title Header di dalam Kertas -->
-              <div class="text-center border-b border-slate-200 pb-6 mb-6">
-                <div id="paper-title-display" class="text-xl font-bold uppercase tracking-wide text-black">JUDUL NASKAH</div>
-                <div class="text-xs text-slate-600 mt-1">
-                  Ditulis oleh <span id="paper-author-display" class="font-bold">Nama Siswa / Kelompok</span>
-                  <span id="paper-kelas-display"></span>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Logline / Premis Singkat</label>
+              <input id="meta-logline" type="text" oninput="updateMetaField('logline', this.value)" placeholder="Ringkasan cerita 1-2 kalimat..." class="w-full min-h-[40px] px-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-blue-600" />
+            </div>
+
+            <!-- Hasil Nilai & Catatan Guru (Jika sudah dinilai) -->
+            <div id="editor-teacher-note-box" class="hidden p-4 rounded-xl bg-indigo-50/80 border border-indigo-200 text-xs text-slate-800 space-y-2">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div class="font-extrabold flex items-center gap-1.5 text-indigo-900">
+                  <i data-lucide="award" class="w-4 h-4 text-indigo-600"></i>
+                  <span>Hasil Penilaian & Evaluasi Guru:</span>
+                </div>
+                <div id="editor-score-pill"></div>
+              </div>
+              <p id="editor-teacher-note-text" class="leading-relaxed text-slate-700"></p>
+            </div>
+          </div>
+
+          <!-- HALAMAN 1 (COVER A4): JUDUL, PENULIS, KELAS, LOGLINE DI TENGAH HALAMAN -->
+          <div class="w-full flex flex-col items-center">
+            <div class="w-full max-w-[210mm] flex items-center justify-between text-[11px] font-bold text-slate-500 mb-1.5 px-1">
+              <span>HALAMAN 1 • COVER NASKAH (UKURAN A4)</span>
+              <span>210mm × 297mm</span>
+            </div>
+            <div id="script-cover-paper" class="a4-sheet a4-cover-sheet screenplay-font">
+              <div class="text-[11px] uppercase tracking-widest text-slate-400">
+                NASKAH PRODUKSI AUDIO VISUAL
+              </div>
+
+              <!-- Konten Cover Terpusat di Bagian Tengah Halaman A4 -->
+              <div class="my-auto py-8 px-2 max-w-xl w-full space-y-5">
+                <div id="cover-format-display" class="text-xs font-bold uppercase tracking-widest text-slate-600">
+                  FORMAT: FILM PENDEK
+                </div>
+                <div id="paper-title-display" class="text-2xl md:text-3xl font-bold uppercase tracking-wide text-black underline underline-offset-8 decoration-1">
+                  JUDUL NASKAH
+                </div>
+                <div id="cover-logline-display" class="text-xs md:text-sm italic text-slate-700 leading-relaxed pt-2">
+                  "Logline atau premis singkat cerita akan tampil di bagian tengah halaman sampul ini."
+                </div>
+                <div class="pt-6 space-y-1.5 text-sm">
+                  <div class="text-xs text-slate-500">Ditulis oleh:</div>
+                  <div id="paper-author-display" class="font-bold text-base text-black">Nama Siswa / Kelompok</div>
+                  <div id="paper-kelas-display" class="text-xs font-bold text-slate-700"></div>
                 </div>
               </div>
 
+              <div class="w-full pt-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-1 text-[11px] text-slate-500">
+                <span>Masjacks ScriptStudio</span>
+                <span>Guru Pengajar: Ja'far Shodiq, S.Kom., MM</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- HALAMAN 2+ (ISI SCENE / SKENARIO A4) -->
+          <div class="w-full flex flex-col items-center">
+            <div class="w-full max-w-[210mm] flex items-center justify-between text-[11px] font-bold text-slate-500 mb-1.5 px-1">
+              <span>HALAMAN 2+ • ISI ADEGAN / SCENE (UKURAN A4)</span>
+              <span>Courier Prime • 12pt</span>
+            </div>
+            <div id="script-paper-container" class="a4-sheet screenplay-font">
               <!-- Daftar Blok Skenario -->
-              <div id="script-blocks-list" class="space-y-1"></div>
+              <div id="script-blocks-list" class="space-y-1.5"></div>
 
               <!-- Quick Bottom Add Bar -->
-              <div id="paper-bottom-controls" class="mt-10 pt-6 border-t border-dashed border-slate-200 flex flex-wrap items-center justify-center gap-2">
-                <button onclick="appendBlock('scene')" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-xs font-sans font-bold text-slate-700 transition">+ Scene</button>
-                <button onclick="appendBlock('action')" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-xs font-sans font-bold text-slate-700 transition">+ Action</button>
-                <button onclick="appendBlock('character')" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-xs font-sans font-bold text-slate-700 transition">+ Character</button>
-                <button onclick="appendBlock('dialogue')" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-xs font-sans font-bold text-slate-700 transition">+ Dialogue</button>
-                <button onclick="appendBlock('transition')" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-xs font-sans font-bold text-slate-700 transition">+ Transition</button>
+              <div id="paper-bottom-controls" class="mt-10 pt-6 border-t border-dashed border-slate-300 flex flex-wrap items-center justify-center gap-2">
+                <button type="button" onclick="appendBlock('scene')" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-xs font-sans font-bold text-slate-700 transition">+ Scene</button>
+                <button type="button" onclick="appendBlock('action')" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-xs font-sans font-bold text-slate-700 transition">+ Action</button>
+                <button type="button" onclick="appendBlock('character')" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-xs font-sans font-bold text-slate-700 transition">+ Character</button>
+                <button type="button" onclick="appendBlock('dialogue')" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-xs font-sans font-bold text-slate-700 transition">+ Dialogue</button>
+                <button type="button" onclick="appendBlock('transition')" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-xs font-sans font-bold text-slate-700 transition">+ Transition</button>
               </div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <!-- VIEW 3: SCENE & CAST BREAKDOWN (PRA-PRODUKSI) -->
-        <section id="view-breakdown" class="hidden max-w-6xl mx-auto p-4 md:p-6 space-y-6">
+      <!-- VIEW 3: SCENE & CAST BREAKDOWN (PRA-PRODUKSI) -->
+      <section id="view-breakdown" class="hidden max-w-6xl mx-auto p-4 md:p-6 space-y-6">
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-xl md:text-2xl font-extrabold text-slate-900">Scene & Cast Breakdown</h2>
+            <p class="text-sm text-slate-600">Analisis otomatis daftar adegan (<em>Scene Stripboard</em>), lokasi INT/EXT, dan pembagian dialog tokoh.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <select id="breakdown-script-select" onchange="selectBreakdownScript(this.value)" class="min-h-[44px] px-3.5 rounded-xl border border-slate-300 text-sm font-bold text-slate-800 bg-white max-w-xs"></select>
+            <button type="button" onclick="exportCurrentScriptToPDF()" class="min-h-[44px] px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold flex items-center gap-2">
+              <i data-lucide="file-down" class="w-4 h-4"></i>
+              <span>Export PDF</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Daftar Scene -->
+          <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-extrabold text-slate-900 flex items-center gap-2">
+                <i data-lucide="film" class="w-5 h-5 text-blue-600"></i>
+                <span>Daftar Adegan (Scene List)</span>
+              </h3>
+              <span id="breakdown-scene-count" class="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 text-xs font-bold">0 Scene</span>
+            </div>
+            <div id="breakdown-scenes-list" class="space-y-2.5"></div>
+          </div>
+
+          <!-- Rekap Cast / Karakter -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-extrabold text-slate-900 flex items-center gap-2">
+                <i data-lucide="users" class="w-5 h-5 text-indigo-600"></i>
+                <span>Daftar Tokoh (Cast)</span>
+              </h3>
+              <span id="breakdown-cast-count" class="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 text-xs font-bold">0 Tokoh</span>
+            </div>
+            <div id="breakdown-cast-list" class="space-y-2.5"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 4: PANEL PENILAIAN GURU (LOGIN KHUSUS GURU & RUBRIK NILAI) -->
+      <section id="view-teacher" class="hidden max-w-6xl mx-auto p-4 md:p-6">
+        <!-- Form Login Guru (Jika belum login) -->
+        <div id="teacher-login-box" class="max-w-md mx-auto mt-6 bg-white rounded-2xl border border-slate-200 p-6 md:p-8 shadow-md space-y-5">
+          <div class="text-center">
+            <div class="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center mx-auto mb-3 shadow-sm">
+              <i data-lucide="award" class="w-6 h-6"></i>
+            </div>
+            <h2 class="text-xl font-extrabold text-slate-900">Login Guru — Penilaian & Kontrol Naskah</h2>
+            <p class="text-xs font-semibold text-blue-700 mt-0.5">Guru Pengajar: Ja'far Shodiq, S.Kom., MM</p>
+            <p class="text-xs text-slate-500 mt-1">Masuk sebagai guru untuk memeriksa karya siswa, memberikan skor rubrik (0–100), membuka kunci naskah, atau menghapus naskah.</p>
+          </div>
+
+          <!-- Info Demo Login HANYA tampil saat IS_PREVIEW === true -->
+          <div id="preview-teacher-hint"></div>
+
+          <form onsubmit="handleTeacherLogin(event)" class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Email Guru</label>
+              <input id="teacher-email" type="email" required placeholder="guru@sekolah.sch.id" class="w-full min-h-[44px] px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-blue-600" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Password</label>
+              <input id="teacher-password" type="password" required placeholder="••••••••" class="w-full min-h-[44px] px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-blue-600" />
+            </div>
+            <button type="submit" class="w-full min-h-[46px] bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl shadow-sm transition">
+              Masuk ke Panel Penilaian Guru
+            </button>
+          </form>
+        </div>
+
+        <!-- Dashboard Penilaian Guru (Jika sudah login) -->
+        <div id="teacher-dashboard-box" class="hidden space-y-6">
           <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h2 class="text-xl md:text-2xl font-extrabold text-slate-900">Scene & Cast Breakdown</h2>
-              <p class="text-sm text-slate-600">Analisis otomatis daftar adegan (<em>Scene Stripboard</em>), lokasi INT/EXT, dan pembagian dialog tokoh.</p>
+              <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold mb-1">
+                <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+                <span>Terautentikasi sebagai Guru (Akses Penuh)</span>
+              </div>
+              <h2 class="text-xl md:text-2xl font-extrabold text-slate-900">Panel Penilaian & Evaluasi Karya Siswa</h2>
+              <p id="teacher-logged-email" class="text-xs text-slate-500 mt-0.5"></p>
             </div>
-            <div class="flex items-center gap-2">
-              <select id="breakdown-script-select" onchange="selectBreakdownScript(this.value)" class="min-h-[44px] px-3.5 rounded-xl border border-slate-300 text-sm font-bold text-slate-800 bg-white max-w-xs"></select>
-              <button onclick="exportCurrentScriptToPDF()" class="min-h-[44px] px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold flex items-center gap-2">
-                <i data-lucide="file-down" class="w-4 h-4"></i>
-                <span>Export PDF</span>
+            <div class="flex flex-wrap items-center gap-2">
+              <select id="teacher-filter-status" onchange="renderTeacherPanel()" class="min-h-[44px] px-3.5 rounded-xl border border-slate-300 text-xs md:text-sm font-bold text-slate-700 bg-white">
+                <option value="ALL">Semua Karya Siswa</option>
+                <option value="UNGRADED">Belum Dinilai</option>
+                <option value="GRADED">Sudah Dinilai</option>
+                <option value="Finish">Status: Finish (Siap Nilai)</option>
+                <option value="Draft">Status: Masih Draft</option>
+              </select>
+              <button type="button" onclick="handleTeacherLogout()" class="min-h-[44px] px-4 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs md:text-sm font-bold flex items-center gap-2">
+                <i data-lucide="log-out" class="w-4 h-4"></i>
+                <span>Keluar</span>
               </button>
             </div>
           </div>
 
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Daftar Scene -->
-            <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-              <div class="flex items-center justify-between mb-4">
-                <h3 class="font-extrabold text-slate-900 flex items-center gap-2">
-                  <i data-lucide="film" class="w-5 h-5 text-blue-600"></i>
-                  <span>Daftar Adegan (Scene List)</span>
-                </h3>
-                <span id="breakdown-scene-count" class="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 text-xs font-bold">0 Scene</span>
-              </div>
-              <div id="breakdown-scenes-list" class="space-y-2.5"></div>
-            </div>
-
-            <!-- Rekap Cast / Karakter -->
-            <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-              <div class="flex items-center justify-between mb-4">
-                <h3 class="font-extrabold text-slate-900 flex items-center gap-2">
-                  <i data-lucide="users" class="w-5 h-5 text-indigo-600"></i>
-                  <span>Daftar Tokoh (Cast)</span>
-                </h3>
-                <span id="breakdown-cast-count" class="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 text-xs font-bold">0 Tokoh</span>
-              </div>
-              <div id="breakdown-cast-list" class="space-y-2.5"></div>
-            </div>
-          </div>
-        </section>
-
-        <!-- VIEW 4: PANEL PENILAIAN GURU (LOGIN KHUSUS GURU & RUBRIK NILAI) -->
-        <section id="view-teacher" class="hidden max-w-6xl mx-auto p-4 md:p-6">
-          <!-- Form Login Guru (Jika belum login) -->
-          <div id="teacher-login-box" class="max-w-md mx-auto mt-6 bg-white rounded-2xl border border-slate-200 p-6 md:p-8 shadow-md space-y-5">
-            <div class="text-center">
-              <div class="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center mx-auto mb-3 shadow-sm">
-                <i data-lucide="award" class="w-6 h-6"></i>
-              </div>
-              <h2 class="text-xl font-extrabold text-slate-900">Login Guru — Penilaian & Kontrol Naskah</h2>
-              <p class="text-xs text-slate-500 mt-1">Masuk sebagai guru untuk memeriksa karya siswa, memberikan skor rubrik (0–100), membuka kunci naskah, atau menghapus naskah.</p>
-            </div>
-
-            <!-- Info Demo Login HANYA tampil saat IS_PREVIEW === true -->
-            <div id="preview-teacher-hint"></div>
-
-            <form onsubmit="handleTeacherLogin(event)" class="space-y-4">
-              <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">Email Guru</label>
-                <input id="teacher-email" type="email" required placeholder="guru@sekolah.sch.id" class="w-full min-h-[44px] px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-blue-600" />
-              </div>
-              <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">Password</label>
-                <input id="teacher-password" type="password" required placeholder="••••••••" class="w-full min-h-[44px] px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-blue-600" />
-              </div>
-              <button type="submit" class="w-full min-h-[46px] bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl shadow-sm transition">
-                Masuk ke Panel Penilaian Guru
-              </button>
-            </form>
-          </div>
-
-          <!-- Dashboard Penilaian Guru (Jika sudah login) -->
-          <div id="teacher-dashboard-box" class="hidden space-y-6">
-            <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold mb-1">
-                  <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
-                  <span>Terautentikasi sebagai Guru (Akses Penuh)</span>
-                </div>
-                <h2 class="text-xl md:text-2xl font-extrabold text-slate-900">Panel Penilaian & Evaluasi Karya Siswa</h2>
-                <p id="teacher-logged-email" class="text-xs text-slate-500 mt-0.5"></p>
-              </div>
-              <div class="flex flex-wrap items-center gap-2">
-                <select id="teacher-filter-status" onchange="renderTeacherPanel()" class="min-h-[44px] px-3.5 rounded-xl border border-slate-300 text-xs md:text-sm font-bold text-slate-700 bg-white">
-                  <option value="ALL">Semua Karya Siswa</option>
-                  <option value="UNGRADED">Belum Dinilai</option>
-                  <option value="GRADED">Sudah Dinilai</option>
-                  <option value="Finish">Status: Finish (Siap Nilai)</option>
-                  <option value="Draft">Status: Masih Draft</option>
-                </select>
-                <button onclick="handleTeacherLogout()" class="min-h-[44px] px-4 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs md:text-sm font-bold flex items-center gap-2">
-                  <i data-lucide="log-out" class="w-4 h-4"></i>
-                  <span>Keluar</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- Daftar Kartu Penilaian Siswa -->
-            <div id="teacher-scripts-list" class="space-y-4"></div>
-          </div>
-        </section>
-      </main>
-    </div>
-
-    <!-- MOBILE FLOATING BOTTOM NAVIGATION BAR -->
-    <nav id="mobile-bottom-nav" class="fixed bottom-3 left-3 right-3 z-40 glass-panel border border-slate-200/90 rounded-2xl shadow-lg px-2 py-1.5 justify-around items-center">
-      <button onclick="switchTab('gallery')" data-nav="gallery" class="nav-btn flex-1 py-2 rounded-xl flex flex-col items-center justify-center gap-0.5 text-[11px] font-bold">
-        <i data-lucide="layout-grid" class="w-5 h-5"></i>
-        <span>Galeri</span>
-      </button>
-      <button onclick="switchTab('editor')" data-nav="editor" class="nav-btn flex-1 py-2 rounded-xl flex flex-col items-center justify-center gap-0.5 text-[11px] font-bold">
-        <i data-lucide="file-pen-line" class="w-5 h-5"></i>
-        <span>Editor</span>
-      </button>
-      <button onclick="createNewScript()" class="w-12 h-12 -mt-5 rounded-2xl bg-blue-600 text-white shadow-md flex items-center justify-center shrink-0">
-        <i data-lucide="plus" class="w-6 h-6"></i>
-      </button>
-      <button onclick="switchTab('breakdown')" data-nav="breakdown" class="nav-btn flex-1 py-2 rounded-xl flex flex-col items-center justify-center gap-0.5 text-[11px] font-bold">
-        <i data-lucide="list-video" class="w-5 h-5"></i>
-        <span>Breakdown</span>
-      </button>
-      <button onclick="switchTab('teacher')" data-nav="teacher" class="nav-btn flex-1 py-2 rounded-xl flex flex-col items-center justify-center gap-0.5 text-[11px] font-bold">
-        <i data-lucide="award" class="w-5 h-5"></i>
-        <span>Nilai Guru</span>
-      </button>
-    </nav>
-
-    <!-- MODAL MODE PRESENTASI PID (TABLE-READ FULLSCREEN) -->
-    <div id="pid-presentation-modal" class="hidden fixed inset-0 z-[100000] bg-slate-900/95 flex flex-col">
-      <div class="bg-slate-900 border-b border-slate-800 px-4 py-3 flex items-center justify-between text-white">
-        <div class="flex items-center gap-3 truncate">
-          <span class="px-2.5 py-1 rounded-lg bg-blue-600 text-xs font-bold">MODE PRESENTASI PID</span>
-          <span id="pid-modal-title" class="font-bold text-sm md:text-base truncate">Judul Naskah</span>
+          <!-- Daftar Kartu Penilaian Siswa -->
+          <div id="teacher-scripts-list" class="space-y-4"></div>
         </div>
-        <div class="flex items-center gap-2">
-          <button onclick="changePidZoom(-10)" class="min-h-[40px] px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-sm font-bold">A-</button>
-          <span id="pid-zoom-text" class="text-xs font-bold px-1">110%</span>
-          <button onclick="changePidZoom(10)" class="min-h-[40px] px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-sm font-bold">A+</button>
-          <button onclick="exportCurrentScriptToPDF()" class="min-h-[40px] px-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs md:text-sm font-bold flex items-center gap-1.5">
-            <i data-lucide="file-down" class="w-4 h-4"></i>
-            <span>Export PDF</span>
-          </button>
-          <button onclick="closePresentationMode()" class="min-h-[40px] px-3.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-xs md:text-sm font-bold flex items-center gap-1">
-            <i data-lucide="x" class="w-4 h-4"></i>
-            <span>Tutup</span>
-          </button>
-        </div>
-      </div>
-      <div class="flex-1 overflow-y-auto p-4 md:p-8 flex justify-center">
-        <div id="pid-presentation-paper" class="script-paper screenplay-font" style="transform-origin: top center;"></div>
-      </div>
-    </div>
-
-    <!-- MODAL KONFIRMASI (FINISH / DELETE) -->
-    <div id="confirm-modal" class="hidden fixed inset-0 z-[100001] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
-        <div id="confirm-icon-wrap" class="w-12 h-12 rounded-2xl flex items-center justify-center"></div>
-        <div>
-          <h3 id="confirm-title" class="text-lg font-extrabold text-slate-900">Konfirmasi</h3>
-          <p id="confirm-desc" class="text-sm text-slate-600 mt-1 leading-relaxed"></p>
-        </div>
-        <div class="flex items-center justify-end gap-2.5 pt-2">
-          <button onclick="closeConfirmModal()" class="min-h-[44px] px-4 rounded-xl border border-slate-300 text-slate-700 font-semibold text-sm hover:bg-slate-50">Batal</button>
-          <button id="confirm-ok-btn" class="min-h-[44px] px-5 rounded-xl text-white font-bold text-sm shadow-sm">Ya, Lanjutkan</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- TOAST NOTIFICATION -->
-    <div id="toast-box" class="fixed top-4 right-4 z-[100002] space-y-2 pointer-events-none"></div>
-
-    <!-- HIDDEN PRINT SHEET -->
-    <div id="print-export-sheet" class="hidden"></div>
+      </section>
+    </main>
   </div>
+
+  <!-- MOBILE FLOATING BOTTOM NAVIGATION BAR -->
+  <nav id="mobile-bottom-nav" class="flex md:hidden fixed bottom-3 left-3 right-3 z-40 glass-panel border border-slate-200/90 rounded-2xl shadow-lg px-2 py-1.5 justify-around items-center">
+    <button type="button" onclick="switchTab('gallery')" data-nav="gallery" class="nav-btn flex-1 py-2 rounded-xl flex flex-col items-center justify-center gap-0.5 text-[11px] font-bold">
+      <i data-lucide="layout-grid" class="w-5 h-5"></i>
+      <span>Galeri</span>
+    </button>
+    <button type="button" onclick="switchTab('editor')" data-nav="editor" class="nav-btn flex-1 py-2 rounded-xl flex flex-col items-center justify-center gap-0.5 text-[11px] font-bold">
+      <i data-lucide="file-pen-line" class="w-5 h-5"></i>
+      <span>Editor</span>
+    </button>
+    <button type="button" onclick="createNewScript()" class="w-12 h-12 -mt-5 rounded-2xl bg-blue-600 text-white shadow-md flex items-center justify-center shrink-0">
+      <i data-lucide="plus" class="w-6 h-6"></i>
+    </button>
+    <button type="button" onclick="switchTab('breakdown')" data-nav="breakdown" class="nav-btn flex-1 py-2 rounded-xl flex flex-col items-center justify-center gap-0.5 text-[11px] font-bold">
+      <i data-lucide="list-video" class="w-5 h-5"></i>
+      <span>Breakdown</span>
+    </button>
+    <button type="button" onclick="switchTab('teacher')" data-nav="teacher" class="nav-btn flex-1 py-2 rounded-xl flex flex-col items-center justify-center gap-0.5 text-[11px] font-bold">
+      <i data-lucide="award" class="w-5 h-5"></i>
+      <span>Nilai Guru</span>
+    </button>
+  </nav>
+
+  <!-- MODAL MODE PRESENTASI PID (LATAR BELAKANG PUTIH BERSIH SAAT DI-SCROLL) -->
+  <div id="pid-presentation-modal" class="overlay-modal hidden">
+    <div class="bg-white border-b border-slate-200 px-4 py-3 flex flex-wrap items-center justify-between gap-2 text-slate-900 shadow-xs shrink-0">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <span class="px-2.5 py-1 rounded-lg bg-blue-600 text-white text-xs font-bold shrink-0">MODE PID (A4)</span>
+        <span id="pid-modal-title" class="font-bold text-sm md:text-base truncate text-slate-900">Judul Naskah</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button type="button" onclick="changePidZoom(-10)" class="min-h-[40px] px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-bold">A-</button>
+        <span id="pid-zoom-text" class="text-xs font-bold px-1 text-slate-700">110%</span>
+        <button type="button" onclick="changePidZoom(10)" class="min-h-[40px] px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-bold">A+</button>
+        <button type="button" onclick="exportCurrentScriptToPDF()" class="min-h-[40px] px-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs md:text-sm font-bold flex items-center gap-1.5">
+          <i data-lucide="file-down" class="w-4 h-4"></i>
+          <span>Export PDF</span>
+        </button>
+        <button type="button" onclick="closePresentationMode()" class="min-h-[40px] px-3.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs md:text-sm font-bold flex items-center gap-1">
+          <i data-lucide="x" class="w-4 h-4"></i>
+          <span>Tutup</span>
+        </button>
+      </div>
+    </div>
+    <!-- Kanvas Scroll PID dengan Latar Putih Bersih Konsisten sampai Bawah -->
+    <div class="flex-1 overflow-y-auto bg-white p-4 md:p-8" style="background-color: #ffffff;">
+      <div id="pid-presentation-paper" class="mx-auto flex flex-col items-center space-y-6 pb-20 bg-white"></div>
+    </div>
+  </div>
+
+  <!-- MODAL KONFIRMASI (FINISH / DELETE) -->
+  <div id="confirm-modal" class="overlay-modal hidden">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+      <div id="confirm-icon-wrap" class="w-12 h-12 rounded-2xl flex items-center justify-center"></div>
+      <div>
+        <h3 id="confirm-title" class="text-lg font-extrabold text-slate-900">Konfirmasi</h3>
+        <p id="confirm-desc" class="text-sm text-slate-600 mt-1 leading-relaxed"></p>
+      </div>
+      <div class="flex items-center justify-end gap-2.5 pt-2">
+        <button type="button" onclick="closeConfirmModal()" class="min-h-[44px] px-4 rounded-xl border border-slate-300 text-slate-700 font-semibold text-sm hover:bg-slate-50">Batal</button>
+        <button type="button" id="confirm-ok-btn" class="min-h-[44px] px-5 rounded-xl text-white font-bold text-sm shadow-sm">Ya, Lanjutkan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast-box" class="fixed top-4 right-4 z-[100002] space-y-2 pointer-events-none"></div>
+
+  <!-- HIDDEN PRINT SHEET -->
+  <div id="print-export-sheet" class="hidden"></div>
 
   <!-- MAIN MODULE SCRIPT -->
   <script type="module">
@@ -766,7 +846,7 @@
     // ==========================================
     if ('serviceWorker' in navigator) {
       const swCode = `
-        const CACHE_NAME = 'masjacks-scriptstudio-v4';
+        const CACHE_NAME = 'masjacks-scriptstudio-v7';
         self.addEventListener('install', (e) => self.skipWaiting());
         self.addEventListener('activate', (e) => e.waitUntil(clients.claim()));
         self.addEventListener('fetch', (e) => {
@@ -779,7 +859,37 @@
     }
 
     // ==========================================
-    // 2. STATE APLIKASI & ANTI-CONFLICT SYNC
+    // 2. KAMUS TRANSISI SKENARIO + BUBBLE INFO
+    // ==========================================
+    const TRANSITION_OPTIONS = [
+      {
+        code: "CUT TO:",
+        desc: "Perpindahan langsung dan cepat dari satu adegan ke adegan lain."
+      },
+      {
+        code: "DISSOLVE TO:",
+        desc: "Gambar dari adegan pertama memudar secara perlahan dan bertumpuk dengan kemunculan adegan berikutnya, biasanya menandakan berlalunya waktu."
+      },
+      {
+        code: "SMASH CUT TO:",
+        desc: "Perpindahan mendadak dan mengejutkan dari satu adegan ke adegan lain yang kontras (misalnya dari suasana sunyi ke suara keras)."
+      },
+      {
+        code: "MATCH CUT TO:",
+        desc: "Perpindahan adegan yang menghubungkan dua objek, bentuk, atau gerakan yang mirip secara visual dari dua adegan berbeda."
+      },
+      {
+        code: "FADE IN:",
+        desc: "Digunakan pada awal naskah (layar gelap ke terang)."
+      },
+      {
+        code: "FADE OUT.",
+        desc: "Digunakan pada akhir naskah (layar terang ke gelap)."
+      }
+    ];
+
+    // ==========================================
+    // 3. STATE APLIKASI & ANTI-CONFLICT SYNC
     // ==========================================
     let db = null;
     let auth = null;
@@ -797,7 +907,6 @@
     let pidZoom = 110;
     let sidebarCollapsed = false;
 
-    // Data Dummy HANYA saat IS_PREVIEW === true (Maksimal 2 data)
     const INITIAL_PREVIEW_SCRIPTS = [
       {
         id: "demo_script_1",
@@ -812,13 +921,14 @@
         teacherNotes: "Alur pembuka sudah menarik. Coba perkuat deskripsi visual suasana ruang studio pada Scene 1.",
         updatedAt: new Date().toISOString(),
         elements: [
-          { id: "el_1", type: "scene", content: "INT. STUDIO FOTOGRAFI SEKOLAH - SORE" },
-          { id: "el_2", type: "action", content: "Cahaya matahari jingga masuk melalui celah ventilasi. RAKA (17) mengelap lensa kamera analog tua di atas meja kayu." },
-          { id: "el_3", type: "character", content: "RAKA" },
-          { id: "el_4", type: "parenthetical", content: "(mengernyit heran)" },
-          { id: "el_5", type: "dialogue", content: "Aneh, filmnya masih terisi penuh... padahal kamera ini sudah mati bertahun-tahun." },
-          { id: "el_6", type: "shot", content: "EXTREME CLOSE UP (ECU) - JARI RAKA MENEKAN TOMBOL SHUTTER" },
-          { id: "el_7", type: "transition", content: "CUT TO:" }
+          { id: "el_1", type: "transition", content: "FADE IN:" },
+          { id: "el_2", type: "scene", content: "INT. STUDIO FOTOGRAFI SEKOLAH - SORE" },
+          { id: "el_3", type: "action", content: "Cahaya matahari jingga masuk melalui celah ventilasi. RAKA (17) mengelap lensa kamera analog tua di atas meja kayu." },
+          { id: "el_4", type: "character", content: "RAKA" },
+          { id: "el_5", type: "parenthetical", content: "(mengernyit heran)" },
+          { id: "el_6", type: "dialogue", content: "Aneh, filmnya masih terisi penuh... padahal kamera ini sudah mati bertahun-tahun. Kalau aku tekan tombol ini sekarang, kira-kira apa yang akan muncul di hasil cetaknya nanti?" },
+          { id: "el_7", type: "shot", content: "EXTREME CLOSE UP (ECU) - JARI RAKA MENEKAN TOMBOL SHUTTER" },
+          { id: "el_8", type: "transition", content: "CUT TO:" }
         ]
       },
       {
@@ -844,7 +954,6 @@
       }
     ];
 
-    // SEMUA DELETE DIKUNCI KHUSUS GURU YANG LOGIN (Draft maupun Finish)
     function canDeleteScript() {
       return isTeacherLoggedIn === true;
     }
@@ -879,16 +988,33 @@
       });
     }
 
+    function isUserActivelyTypingInEditor() {
+      const active = document.activeElement;
+      if (!active) return false;
+      const editorView = document.getElementById("view-editor");
+      if (!editorView || editorView.classList.contains("hidden")) return false;
+      return editorView.contains(active) && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.tagName === "SELECT");
+    }
+
     // ==========================================
-    // 3. INISIALISASI FIREBASE / PREVIEW MODE
+    // 4. INISIALISASI FIREBASE / PREVIEW MODE
     // ==========================================
     function initAppEngine() {
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(() => {
+          resizeAllEditorTextareas();
+        });
+      }
+      window.addEventListener("resize", () => {
+        resizeAllEditorTextareas();
+      });
+
       if (IS_PREVIEW) {
         document.getElementById("preview-banner-slot").innerHTML = `
           <div class="bg-amber-500 text-slate-950 px-4 py-1.5 text-xs font-bold flex flex-wrap items-center justify-between gap-2">
             <div class="flex items-center gap-2">
               <span class="px-2 py-0.5 rounded bg-slate-950 text-amber-400 text-[10px] uppercase tracking-wider">Mode Preview</span>
-              <span>Simulasi in-memory aktif (2 data contoh). Ubah <code>IS_PREVIEW = false</code> untuk koneksi real-time ke Firebase.</span>
+              <span>Simulasi in-memory aktif. Ubah <code>IS_PREVIEW = false</code> dan isi <code>firebaseConfig</code> saat publish.</span>
             </div>
           </div>
         `;
@@ -903,64 +1029,73 @@
         currentScript = JSON.parse(JSON.stringify(scriptsList[0]));
         currentScript.elements = normalizeElements(currentScript.elements);
         lastRemoteFingerprint = computeScriptFingerprint(currentScript);
-        refreshAllUI();
+        updateAuthUI();
+        renderGallery();
       } else {
-        // Mode Produksi Murni (ZERO dummy data, ZERO preview UI, ZERO localStorage)
-        const app = initializeApp(firebaseConfig);
-        auth = getAuth(app);
-        db = getFirestore(app);
+        try {
+          const app = initializeApp(firebaseConfig);
+          auth = getAuth(app);
+          db = getFirestore(app);
 
-        onAuthStateChanged(auth, (user) => {
-          if (user) {
-            isTeacherLoggedIn = true;
-            teacherEmailAddress = user.email || "Guru";
-          } else {
-            isTeacherLoggedIn = false;
-            teacherEmailAddress = "";
-          }
-          refreshAllUI();
-        });
-
-        // Real-time listener Firestore koleksi 'scripts' dengan Isolasi Anti-Conflict
-        const q = query(collection(db, "scripts"), orderBy("updatedAt", "desc"));
-        onSnapshot(q, (snapshot) => {
-          scriptsList = snapshot.docs.map(d => {
-            const data = d.data();
-            return {
-              id: d.id,
-              ...data,
-              elements: normalizeElements(data.elements)
-            };
+          onAuthStateChanged(auth, (user) => {
+            if (user) {
+              isTeacherLoggedIn = true;
+              teacherEmailAddress = user.email || "Guru";
+            } else {
+              isTeacherLoggedIn = false;
+              teacherEmailAddress = "";
+            }
+            updateAuthUI();
+            renderGallery();
+            const delBtn = document.getElementById("btn-delete-editor");
+            if (delBtn && currentScript) {
+              delBtn.classList.toggle("hidden", !(Boolean(currentScript.id) && canDeleteScript()));
+            }
+            if (!document.getElementById("view-teacher").classList.contains("hidden")) {
+              renderTeacherPanel();
+            }
           });
 
-          if (!currentScript && scriptsList.length > 0) {
-            currentScript = JSON.parse(JSON.stringify(scriptsList[0]));
-            lastRemoteFingerprint = computeScriptFingerprint(currentScript);
-          } else if (!currentScript) {
-            currentScript = createBlankScriptObject();
-          } else if (currentScript.id) {
-            const remoteDoc = scriptsList.find(s => s.id === currentScript.id);
-            if (remoteDoc) {
-              const incomingFp = computeScriptFingerprint(remoteDoc);
-              // HANYA proses merge jika dokumen yang sedang dibuka BENAR-BENAR berubah di server
-              if (incomingFp !== lastRemoteFingerprint) {
-                lastRemoteFingerprint = incomingFp;
-                mergeRemoteScriptSafely(remoteDoc);
+          const q = query(collection(db, "scripts"), orderBy("updatedAt", "desc"));
+          onSnapshot(q, (snapshot) => {
+            scriptsList = snapshot.docs.map(d => {
+              const data = d.data();
+              return {
+                id: d.id,
+                ...data,
+                elements: normalizeElements(data.elements)
+              };
+            });
+
+            if (!currentScript && scriptsList.length > 0) {
+              currentScript = JSON.parse(JSON.stringify(scriptsList[0]));
+              lastRemoteFingerprint = computeScriptFingerprint(currentScript);
+            } else if (!currentScript) {
+              currentScript = createBlankScriptObject();
+            } else if (currentScript.id && !snapshot.metadata.hasPendingWrites) {
+              const remoteDoc = scriptsList.find(s => s.id === currentScript.id);
+              if (remoteDoc) {
+                const incomingFp = computeScriptFingerprint(remoteDoc);
+                if (incomingFp !== lastRemoteFingerprint) {
+                  lastRemoteFingerprint = incomingFp;
+                  mergeRemoteScriptSafely(remoteDoc);
+                }
               }
             }
-          }
 
-          renderGallery();
-          if (!document.getElementById("view-teacher").classList.contains("hidden")) {
-            renderTeacherPanel();
-          }
-        }, (err) => {
-          showToast("Gagal terhubung ke Firestore: " + err.message, "error");
-        });
+            renderGallery();
+            if (!document.getElementById("view-teacher").classList.contains("hidden")) {
+              renderTeacherPanel();
+            }
+          }, (err) => {
+            showToast("Gagal terhubung ke Firestore: " + err.message, "error");
+          });
+        } catch (initErr) {
+          showToast("Pastikan firebaseConfig sudah diisi dengan benar: " + initErr.message, "error");
+        }
       }
     }
 
-    // Penggabungan Real-Time Anti-Bentrok Kursor (Surgical In-Place Update)
     function mergeRemoteScriptSafely(remoteDoc) {
       if (!currentScript) return;
       const wasDraft = currentScript.status !== "Finish";
@@ -1003,9 +1138,9 @@
         if (el && el.value !== currentScript.logline) el.value = currentScript.logline;
       }
 
-      const activeDomBlockId = document.activeElement?.getAttribute?.("data-block-id") || focusedBlockId;
-      const isActivelyEditingNow = Boolean(activeDomBlockId) && (Date.now() - lastLocalEditAt < 4000);
+      updateCoverDisplay();
 
+      const activeDomBlockId = document.activeElement?.getAttribute?.("data-block-id") || focusedBlockId;
       const localActiveBlock = activeDomBlockId
         ? currentScript.elements.find(b => b.id === activeDomBlockId)
         : null;
@@ -1025,10 +1160,10 @@
       currentScript.elements = mergedElements;
 
       if (!document.getElementById("view-editor").classList.contains("hidden")) {
-        if (!isActivelyEditingNow && !document.activeElement?.classList?.contains("script-textarea")) {
-          renderEditor();
-        } else {
+        if (isUserActivelyTypingInEditor() || (Date.now() - lastLocalEditAt < 4500)) {
           syncNonFocusedBlocksInDOM(activeDomBlockId);
+        } else {
+          renderEditor();
         }
       }
     }
@@ -1037,34 +1172,12 @@
       const listEl = document.getElementById("script-blocks-list");
       if (!listEl) return;
 
-      // Jika jumlah baris berubah karena teman menambah/menghapus baris, simpan posisi kursor sebelum render ulang
-      if (listEl.children.length !== currentScript.elements.length) {
-        const activeTa = document.activeElement;
-        const savedId = activeTa?.getAttribute?.("data-block-id") || protectedBlockId;
-        const selStart = typeof activeTa?.selectionStart === "number" ? activeTa.selectionStart : null;
-        const selEnd = typeof activeTa?.selectionEnd === "number" ? activeTa.selectionEnd : null;
-
-        renderEditor();
-
-        if (savedId) {
-          const restoredTa = document.querySelector(`[data-block-id="${savedId}"]`);
-          if (restoredTa) {
-            restoredTa.focus();
-            if (selStart !== null && selEnd !== null) {
-              try { restoredTa.setSelectionRange(selStart, selEnd); } catch (_) {}
-            }
-          }
-        }
-        return;
-      }
-
-      // Update isi blok lain yang tidak sedang diketik tanpa menyentuh blok yang sedang aktif
       currentScript.elements.forEach((block, idx) => {
         if (block.id === protectedBlockId) return;
         const ta = document.getElementById("block-input-" + idx);
         if (ta && document.activeElement !== ta && ta.value !== block.content) {
           ta.value = block.content;
-          ta.className = `script-textarea w-full el-${block.type}`;
+          ta.className = `script-textarea el-${block.type}`;
           autoResizeTextarea(ta);
         }
       });
@@ -1091,14 +1204,13 @@
     }
 
     // ==========================================
-    // 4. NAVIGASI & SIDEBAR
+    // 5. NAVIGASI & SIDEBAR
     // ==========================================
     window.switchTab = function(tabName) {
       const views = ["gallery", "editor", "breakdown", "teacher"];
       views.forEach(v => {
         const el = document.getElementById("view-" + v);
         if (el) el.classList.toggle("hidden", v !== tabName);
-        if (v === "editor" && v === tabName) el.classList.add("flex");
       });
 
       document.querySelectorAll(".nav-btn").forEach(btn => {
@@ -1116,11 +1228,12 @@
       if (tabName === "editor") {
         if (!currentScript) currentScript = createBlankScriptObject();
         renderEditor();
+        requestAnimationFrame(() => resizeAllEditorTextareas());
       }
       if (tabName === "breakdown") renderBreakdown();
       if (tabName === "teacher") renderTeacherPanel();
 
-      lucide.createIcons();
+      if (typeof lucide !== "undefined") lucide.createIcons();
     };
 
     window.toggleSidebar = function() {
@@ -1134,13 +1247,19 @@
     };
 
     // ==========================================
-    // 5. GALERI HALAMAN DEPAN & MENU SEARCH NAMA SISWA
+    // 6. GALERI HALAMAN DEPAN & MENU SEARCH NAMA SISWA
     // ==========================================
     window.handleSearchInput = function() {
       const input = document.getElementById("filter-search");
       const clearBtn = document.getElementById("clear-search-btn");
       if (clearBtn) {
-        clearBtn.classList.toggle("hidden", !input || !input.value.trim());
+        if (input && input.value.trim()) {
+          clearBtn.classList.remove("hidden");
+          clearBtn.classList.add("flex");
+        } else {
+          clearBtn.classList.add("hidden");
+          clearBtn.classList.remove("flex");
+        }
       }
       renderGallery();
     };
@@ -1151,7 +1270,11 @@
         input.value = "";
         input.focus();
       }
-      document.getElementById("clear-search-btn")?.classList.add("hidden");
+      const clearBtn = document.getElementById("clear-search-btn");
+      if (clearBtn) {
+        clearBtn.classList.add("hidden");
+        clearBtn.classList.remove("flex");
+      }
       renderGallery();
     };
 
@@ -1204,7 +1327,7 @@
       const grid = document.getElementById("gallery-grid");
       if (filtered.length === 0) {
         grid.innerHTML = `
-          <div class="col-span-full bg-white rounded-2xl border border-dashed border-slate-300 p-12 text-center space-y-3">
+          <div class="col-span-full bg-white rounded-2xl border border-dashed border-slate-300 p-10 text-center space-y-3">
             <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-500 flex items-center justify-center mx-auto">
               <i data-lucide="file-plus-2" class="w-6 h-6"></i>
             </div>
@@ -1216,7 +1339,7 @@
             </p>
           </div>
         `;
-        lucide.createIcons();
+        if (typeof lucide !== "undefined") lucide.createIcons();
         return;
       }
 
@@ -1234,7 +1357,7 @@
               <!-- Top Badges -->
               <div class="flex items-center justify-between gap-2 flex-wrap">
                 <span class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 text-xs font-bold">${escapeHtml(script.formatType || "Film Pendek")}</span>
-                <div class="flex items-center gap-1.5">
+                <div class="flex items-center gap-1.5 flex-wrap">
                   ${pred ? `
                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs font-extrabold ${pred.color}">
                       <i data-lucide="award" class="w-3 h-3"></i> Nilai: ${script.score} (${pred.grade})
@@ -1276,29 +1399,29 @@
             <!-- Card Action Buttons -->
             <div class="pt-2 border-t border-slate-100 flex flex-wrap items-center gap-2">
               ${!isFinished ? `
-                <button onclick="openScriptInEditor('${script.id}')" class="flex-1 min-h-[40px] px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition">
+                <button type="button" onclick="openScriptInEditor('${script.id}')" class="flex-1 min-h-[40px] px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition">
                   <i data-lucide="users" class="w-3.5 h-3.5"></i>
                   <span>Edit Bersama (Draft)</span>
                 </button>
               ` : `
-                <button onclick="openScriptInEditor('${script.id}')" class="flex-1 min-h-[40px] px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center justify-center gap-1.5 transition" title="Terkunci (Hanya Baca)">
+                <button type="button" onclick="openScriptInEditor('${script.id}')" class="flex-1 min-h-[40px] px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center justify-center gap-1.5 transition" title="Terkunci (Hanya Baca)">
                   <i data-lucide="eye" class="w-3.5 h-3.5"></i>
                   <span>Lihat (Terkunci)</span>
                 </button>
               `}
 
-              <button onclick="openScriptPresentation('${script.id}')" class="min-h-[40px] px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center justify-center gap-1" title="Tampilkan di PID">
+              <button type="button" onclick="openScriptPresentation('${script.id}')" class="min-h-[40px] px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center justify-center gap-1" title="Tampilkan di PID">
                 <i data-lucide="monitor-play" class="w-3.5 h-3.5"></i>
                 <span>PID</span>
               </button>
 
-              <button onclick="exportScriptByIdToPDF('${script.id}')" class="min-h-[40px] px-3 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold flex items-center justify-center gap-1" title="Export PDF">
+              <button type="button" onclick="exportScriptByIdToPDF('${script.id}')" class="min-h-[40px] px-3 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold flex items-center justify-center gap-1" title="Export PDF A4">
                 <i data-lucide="file-down" class="w-3.5 h-3.5"></i>
                 <span>PDF</span>
               </button>
 
               ${allowDelete ? `
-                <button onclick="confirmDeleteScript('${script.id}')" class="min-h-[40px] px-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold flex items-center justify-center" title="Delete Naskah (Khusus Guru)">
+                <button type="button" onclick="confirmDeleteScript('${script.id}')" class="min-h-[40px] px-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold flex items-center justify-center" title="Delete Naskah (Khusus Guru)">
                   <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                 </button>
               ` : ""}
@@ -1307,20 +1430,21 @@
         `;
       }).join("");
 
-      lucide.createIcons();
+      if (typeof lucide !== "undefined") lucide.createIcons();
     };
 
     // ==========================================
-    // 6. STUDIO EDITOR NASKAH + LIVE CO-EDITING
+    // 7. STUDIO EDITOR NASKAH (KERTAS A4 + COVER PAGE + LIVE CO-EDITING)
     // ==========================================
     window.createNewScript = function() {
       currentScript = createBlankScriptObject();
       lastRemoteFingerprint = "";
       activeBlockIndex = 0;
       focusedBlockId = null;
+      closeTransitionBubble();
       document.getElementById("duplicate-title-alert").classList.add("hidden");
       switchTab("editor");
-      showToast("Lembar naskah baru siap ditulis!", "info");
+      showToast("Lembar naskah A4 baru siap ditulis!", "info");
     };
 
     window.openScriptInEditor = function(id) {
@@ -1331,6 +1455,7 @@
       lastRemoteFingerprint = computeScriptFingerprint(currentScript);
       activeBlockIndex = 0;
       focusedBlockId = null;
+      closeTransitionBubble();
       document.getElementById("duplicate-title-alert").classList.add("hidden");
       switchTab("editor");
     };
@@ -1339,6 +1464,25 @@
       openScriptInEditor(id);
       showToast("Berhasil bergabung ke sesi kolaborasi kelompok!", "success");
     };
+
+    function updateCoverDisplay() {
+      if (!currentScript) return;
+      const fmtEl = document.getElementById("cover-format-display");
+      const titleEl = document.getElementById("paper-title-display");
+      const loglineEl = document.getElementById("cover-logline-display");
+      const authorEl = document.getElementById("paper-author-display");
+      const kelasEl = document.getElementById("paper-kelas-display");
+
+      if (fmtEl) fmtEl.textContent = `FORMAT: ${(currentScript.formatType || "Film Pendek").toUpperCase()}`;
+      if (titleEl) titleEl.textContent = currentScript.title || "JUDUL NASKAH";
+      if (loglineEl) {
+        loglineEl.textContent = currentScript.logline
+          ? `"${currentScript.logline}"`
+          : `"Logline atau premis singkat cerita akan tampil di bagian tengah halaman sampul ini."`;
+      }
+      if (authorEl) authorEl.textContent = currentScript.authorName || "Nama Siswa / Kelompok";
+      if (kelasEl) kelasEl.textContent = currentScript.kelas ? `Kelas: ${currentScript.kelas}` : "";
+    }
 
     window.renderEditor = function() {
       if (!currentScript) currentScript = createBlankScriptObject();
@@ -1366,9 +1510,7 @@
         el.disabled = isLocked;
       });
 
-      document.getElementById("paper-title-display").textContent = currentScript.title || "JUDUL NASKAH";
-      document.getElementById("paper-author-display").textContent = currentScript.authorName || "Nama Siswa / Kelompok";
-      document.getElementById("paper-kelas-display").textContent = currentScript.kelas ? ` (${currentScript.kelas})` : "";
+      updateCoverDisplay();
 
       const badgeSlot = document.getElementById("editor-status-badge");
       badgeSlot.innerHTML = isLocked
@@ -1382,9 +1524,13 @@
       document.getElementById("paper-bottom-controls").classList.toggle("hidden", isLocked);
       document.getElementById("btn-save-draft").classList.toggle("hidden", isLocked);
       document.getElementById("btn-finish-script").classList.toggle("hidden", isLocked);
-      document.getElementById("btn-delete-editor").classList.toggle("hidden", !allowDelete);
 
-      // Tampilkan Nilai & Catatan Guru di Editor jika ada
+      const delBtn = document.getElementById("btn-delete-editor");
+      if (delBtn) {
+        delBtn.classList.toggle("hidden", !allowDelete);
+        delBtn.classList.toggle("flex", allowDelete);
+      }
+
       const noteBox = document.getElementById("editor-teacher-note-box");
       const hasScore = currentScript.score !== null && currentScript.score !== undefined && currentScript.score !== "";
       if (currentScript.teacherNotes || hasScore) {
@@ -1398,7 +1544,6 @@
         noteBox.classList.add("hidden");
       }
 
-      // Render Blocks
       const listEl = document.getElementById("script-blocks-list");
       listEl.innerHTML = currentScript.elements.map((block, idx) => {
         const isActive = idx === activeBlockIndex && !isLocked;
@@ -1414,7 +1559,7 @@
 
         return `
           <div id="block-row-${idx}" class="group relative flex items-start gap-1.5 rounded-lg transition ${isActive ? 'bg-indigo-50/60' : ''}" onclick="setActiveBlockIndex(${idx})">
-            <div class="w-16 shrink-0 pt-2 select-none hidden sm:flex flex-col items-end pr-1">
+            <div class="w-14 shrink-0 pt-2 select-none hidden sm:flex flex-col items-end pr-1">
               <span data-badge-idx="${idx}" class="text-[9px] font-sans font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded ${isActive ? 'bg-blue-600 text-white' : 'text-slate-400 bg-slate-100'}">
                 ${block.type.slice(0, 5)}
               </span>
@@ -1431,7 +1576,7 @@
                 onblur="handleBlockBlur(${idx})"
                 oninput="handleBlockInput(${idx}, this)"
                 onkeydown="handleBlockKeydown(event, ${idx})"
-                class="script-textarea w-full el-${block.type}"
+                class="script-textarea el-${block.type}"
               >${escapeHtml(block.content)}</textarea>
             </div>
 
@@ -1452,30 +1597,38 @@
         `;
       }).join("");
 
-      currentScript.elements.forEach((_, idx) => {
-        const ta = document.getElementById("block-input-" + idx);
-        if (ta) autoResizeTextarea(ta);
-      });
-
+      resizeAllEditorTextareas();
       updateElementToolbarHighlight();
       renderSmartChips();
       updateDurationBadge();
       applyZoomStyle();
-      lucide.createIcons();
+      if (typeof lucide !== "undefined") lucide.createIcons();
     };
 
     function autoResizeTextarea(el) {
       if (!el) return;
+      const prevScrollY = window.scrollY;
       el.style.height = "auto";
-      el.style.height = el.scrollHeight + "px";
+      const nextHeight = Math.max(el.scrollHeight + 4, 30);
+      el.style.height = nextHeight + "px";
+      if (window.scrollY !== prevScrollY) {
+        window.scrollTo(window.scrollX, prevScrollY);
+      }
+    }
+
+    function resizeAllEditorTextareas() {
+      if (!currentScript || !Array.isArray(currentScript.elements)) return;
+      currentScript.elements.forEach((_, idx) => {
+        const ta = document.getElementById("block-input-" + idx);
+        if (ta) autoResizeTextarea(ta);
+      });
     }
 
     window.updateMetaField = function(field, val) {
       if (!currentScript || currentScript.status === "Finish") return;
+      lastLocalEditAt = Date.now();
       currentScript[field] = field === "title" ? val.toUpperCase() : val;
-      document.getElementById("paper-title-display").textContent = currentScript.title || "JUDUL NASKAH";
-      document.getElementById("paper-author-display").textContent = currentScript.authorName || "Nama Siswa / Kelompok";
-      document.getElementById("paper-kelas-display").textContent = currentScript.kelas ? ` (${currentScript.kelas})` : "";
+      updateCoverDisplay();
       updateDurationBadge();
 
       if (field === "title" && !currentScript.id) {
@@ -1490,7 +1643,7 @@
               `Judul "${existingDraft.title}" sedang dikerjakan oleh ${existingDraft.authorName || "kelompok lain"}. Gabung ke dokumen ini agar kolaborasi real-time berjalan tanpa bentrok.`;
             document.getElementById("join-collab-btn").onclick = () => joinExistingDraft(existingDraft.id);
             alertBox.classList.remove("hidden");
-            lucide.createIcons();
+            if (typeof lucide !== "undefined") lucide.createIcons();
             return;
           }
         }
@@ -1509,13 +1662,15 @@
     };
 
     window.handleBlockBlur = function(idx) {
-      // Normalisasi huruf kapital saat selesai mengetik baris tanpa mengganggu IME saat mengetik
       if (currentScript && currentScript.elements[idx]) {
         const block = currentScript.elements[idx];
         if (["scene", "character", "transition", "shot"].includes(block.type) && block.content) {
           block.content = block.content.toUpperCase();
           const ta = document.getElementById("block-input-" + idx);
-          if (ta && ta.value !== block.content) ta.value = block.content;
+          if (ta && ta.value !== block.content) {
+            ta.value = block.content;
+            autoResizeTextarea(ta);
+          }
         }
       }
       setTimeout(() => {
@@ -1571,6 +1726,9 @@
       if (["scene", "character", "transition", "shot"].includes(newType)) {
         currentScript.elements[activeBlockIndex].content = (currentScript.elements[activeBlockIndex].content || "").toUpperCase();
       }
+      if (newType !== "transition") {
+        closeTransitionBubble();
+      }
       lastLocalEditAt = Date.now();
       renderEditor();
       focusBlock(activeBlockIndex);
@@ -1585,7 +1743,6 @@
       focusedBlockId = block.id;
       lastLocalEditAt = Date.now();
 
-      // Simpan nilai mentah langsung tanpa memaksa setSelectionRange agar keyboard layar sentuh/IME tidak macet
       const rawVal = textareaEl.value;
       block.content = ["scene", "character", "transition", "shot"].includes(block.type)
         ? rawVal.toUpperCase()
@@ -1646,6 +1803,7 @@
         return;
       }
 
+      if (!db) return;
       isSavingToCloud = true;
       try {
         const isNew = !currentScript.id;
@@ -1814,11 +1972,39 @@
       scheduleAutoSync();
     };
 
+    // ==========================================
+    // 8. SMART CHIPS & MENU TRANSISI + BUBBLE INFO
+    // ==========================================
     function renderSmartChips() {
       const bar = document.getElementById("smart-chips-bar");
       if (!bar || !currentScript || currentScript.status === "Finish") return;
       const block = currentScript.elements[activeBlockIndex];
       if (!block) return;
+
+      if (block.type === "transition") {
+        bar.innerHTML = `<span class="text-[11px] font-bold text-indigo-700 shrink-0 flex items-center gap-1"><i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Pilih Transisi:</span>` +
+          TRANSITION_OPTIONS.map((t, i) => `
+            <div class="inline-flex items-center rounded-lg bg-indigo-50 border border-indigo-200 shrink-0 overflow-hidden">
+              <button
+                type="button"
+                onclick="selectTransitionOption(${i})"
+                class="px-2.5 py-1 hover:bg-indigo-100 text-indigo-900 text-xs font-extrabold transition"
+              >
+                ${escapeHtml(t.code)}
+              </button>
+              <button
+                type="button"
+                onclick="showTransitionBubble(${i}); event.stopPropagation();"
+                title="Lihat penjelasan ${escapeHtml(t.code)}"
+                class="px-1.5 py-1 bg-indigo-100/80 hover:bg-indigo-600 text-indigo-700 hover:text-white border-l border-indigo-200 text-xs transition flex items-center justify-center"
+              >
+                <i data-lucide="info" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          `).join("");
+        if (typeof lucide !== "undefined") lucide.createIcons();
+        return;
+      }
 
       let chips = [];
       if (block.type === "scene") {
@@ -1830,8 +2016,6 @@
             .map(e => e.content.replace(/\s*\(.*?\)\s*/g, "").trim().toUpperCase())
         )];
         chips = [...existingChars, " (V.O.)", " (O.S.)", " (CONT'D)"];
-      } else if (block.type === "transition") {
-        chips = ["CUT TO:", "FADE IN:", "FADE OUT.", "DISSOLVE TO:", "SMASH CUT TO:"];
       } else if (block.type === "shot") {
         chips = ["WIDE SHOT (WS) - ", "MEDIUM SHOT (MS) - ", "CLOSE UP (CU) - ", "EXTREME CLOSE UP (ECU) - ", "PANNING - "];
       } else if (block.type === "parenthetical") {
@@ -1850,6 +2034,34 @@
           </button>
         `).join("");
     }
+
+    window.selectTransitionOption = function(idx) {
+      if (!currentScript || currentScript.status === "Finish") return;
+      const opt = TRANSITION_OPTIONS[idx];
+      const block = currentScript.elements[activeBlockIndex];
+      if (!opt || !block) return;
+
+      block.content = opt.code;
+      lastLocalEditAt = Date.now();
+      renderEditor();
+      showTransitionBubble(idx);
+      focusBlock(activeBlockIndex);
+      scheduleAutoSync();
+    };
+
+    window.showTransitionBubble = function(idx) {
+      const opt = TRANSITION_OPTIONS[idx];
+      const bubble = document.getElementById("transition-info-bubble");
+      if (!opt || !bubble) return;
+      document.getElementById("transition-bubble-title").textContent = opt.code;
+      document.getElementById("transition-bubble-desc").textContent = opt.desc;
+      bubble.classList.remove("hidden");
+      if (typeof lucide !== "undefined") lucide.createIcons();
+    };
+
+    window.closeTransitionBubble = function() {
+      document.getElementById("transition-info-bubble")?.classList.add("hidden");
+    };
 
     window.insertChipText = function(text) {
       if (!currentScript || currentScript.status === "Finish") return;
@@ -1874,21 +2086,23 @@
 
     function applyZoomStyle() {
       const paper = document.getElementById("script-paper-container");
-      if (paper) {
-        paper.style.fontSize = (16 * (editorZoom / 100)) + "px";
-      }
+      const cover = document.getElementById("script-cover-paper");
+      const fontSizePx = (16 * (editorZoom / 100)) + "px";
+      if (paper) paper.style.fontSize = fontSizePx;
+      if (cover) cover.style.fontSize = fontSizePx;
+      resizeAllEditorTextareas();
     }
 
     function calculateDuration(script) {
       const elements = script?.elements || [];
       const totalWords = elements.reduce((acc, el) => acc + (el.content || "").trim().split(/\s+/).filter(Boolean).length, 0);
-      const estPages = Math.max(1, Math.ceil(elements.length / 18));
+      const estScriptPages = Math.max(1, Math.ceil(elements.length / 18));
       if (script?.formatType === "Video Iklan (TVC)") {
         const secs = Math.max(5, Math.round(totalWords / 2.3));
-        return { pages: estPages, label: `~${secs} Detik (${totalWords} kata)` };
+        return { pages: estScriptPages, label: `~${secs} Detik (${totalWords} kata)` };
       }
       const mins = Math.max(1, Math.round(totalWords / 130));
-      return { pages: estPages, label: `~${estPages} Hal • ±${mins} Menit` };
+      return { pages: estScriptPages, label: `A4: Cover + ${estScriptPages} Hal • ±${mins} Mnt` };
     }
 
     function updateDurationBadge() {
@@ -1898,7 +2112,7 @@
     }
 
     // ==========================================
-    // 7. SIMPAN DRAFT, FINISH (KUNCI), & DELETE (KHUSUS GURU)
+    // 9. SIMPAN DRAFT, FINISH (KUNCI), & DELETE (KHUSUS GURU)
     // ==========================================
     window.saveScript = async function(targetStatus = "Draft") {
       if (!currentScript) return;
@@ -2061,7 +2275,7 @@
     }
 
     // ==========================================
-    // 8. MODE PRESENTASI PID (TABLE-READ FULLSCREEN)
+    // 10. MODE PRESENTASI PID (COVER A4 + SCENE A4 PUTIH BERSIH)
     // ==========================================
     window.openScriptPresentation = function(id) {
       const found = scriptsList.find(s => s.id === id);
@@ -2081,7 +2295,7 @@
       document.getElementById("pid-modal-title").textContent = `${currentScript.title || "TANPA JUDUL"} — ${currentScript.authorName || ""}`;
       renderPresentationPaper();
       modal.classList.remove("hidden");
-      lucide.createIcons();
+      if (typeof lucide !== "undefined") lucide.createIcons();
     };
 
     window.closePresentationMode = function() {
@@ -2096,12 +2310,44 @@
 
     function renderPresentationPaper() {
       const container = document.getElementById("pid-presentation-paper");
-      container.style.fontSize = (16 * (pidZoom / 100)) + "px";
-      container.innerHTML = buildScreenplayHtmlBody(currentScript);
+      const fontSizePx = (16 * (pidZoom / 100)) + "px";
+      const hasScore = currentScript.score !== null && currentScript.score !== undefined && currentScript.score !== "";
+      const pred = getPredikat(currentScript.score);
+
+      container.innerHTML = `
+        <!-- Halaman 1: Cover A4 -->
+        <div class="a4-sheet a4-cover-sheet screenplay-font" style="font-size: ${fontSizePx};">
+          <div class="text-[11px] uppercase tracking-widest text-slate-400">NASKAH PRODUKSI AUDIO VISUAL</div>
+          <div class="my-auto py-8 px-2 max-w-xl w-full space-y-5">
+            <div class="text-xs font-bold uppercase tracking-widest text-slate-600">
+              FORMAT: ${escapeHtml((currentScript.formatType || "Film Pendek").toUpperCase())}
+            </div>
+            <div class="text-2xl md:text-3xl font-bold uppercase tracking-wide text-black underline underline-offset-8 decoration-1">
+              ${escapeHtml(currentScript.title || "JUDUL NASKAH")}
+            </div>
+            ${currentScript.logline ? `<div class="text-xs md:text-sm italic text-slate-700 leading-relaxed pt-2">"${escapeHtml(currentScript.logline)}"</div>` : ""}
+            <div class="pt-6 space-y-1.5 text-sm">
+              <div class="text-xs text-slate-500">Ditulis oleh:</div>
+              <div class="font-bold text-base text-black">${escapeHtml(currentScript.authorName || "Nama Siswa / Kelompok")}</div>
+              ${currentScript.kelas ? `<div class="text-xs font-bold text-slate-700">Kelas: ${escapeHtml(currentScript.kelas)}</div>` : ""}
+              ${hasScore ? `<div class="text-xs font-bold text-blue-900 pt-2">Nilai Guru: ${currentScript.score} / 100 (${pred ? pred.grade + " - " + pred.label : ""})</div>` : ""}
+            </div>
+          </div>
+          <div class="w-full pt-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-1 text-[11px] text-slate-500">
+            <span>Masjacks ScriptStudio</span>
+            <span>Guru Pengajar: Ja'far Shodiq, S.Kom., MM</span>
+          </div>
+        </div>
+
+        <!-- Halaman 2+: Isi Scene A4 -->
+        <div class="a4-sheet screenplay-font" style="font-size: ${fontSizePx};">
+          ${buildSceneBlocksHtml(currentScript)}
+        </div>
+      `;
     }
 
     // ==========================================
-    // 9. EXPORT PDF STANDAR INDUSTRI FILM
+    // 11. EXPORT PDF A4 (HALAMAN 1 COVER TERPUSAT + HALAMAN 2+ SCENE)
     // ==========================================
     window.exportScriptByIdToPDF = function(id) {
       const found = scriptsList.find(s => s.id === id);
@@ -2114,24 +2360,8 @@
       generatePDFFile(currentScript);
     };
 
-    function buildScreenplayHtmlBody(script) {
-      const hasScore = script.score !== null && script.score !== undefined && script.score !== "";
-      const pred = getPredikat(script.score);
-
-      const titleHeader = `
-        <div style="text-align: center; border-bottom: 1px solid #CBD5E1; padding-bottom: 20px; margin-bottom: 24px;">
-          <div style="font-size: 1.35em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #000;">
-            ${escapeHtml(script.title || "JUDUL NASKAH")}
-          </div>
-          <div style="font-size: 0.85em; color: #334155; margin-top: 6px;">
-            Format: <strong>${escapeHtml(script.formatType || "Film Pendek")}</strong> • Ditulis oleh: <strong>${escapeHtml(script.authorName || "Siswa")}</strong> ${script.kelas ? `(${escapeHtml(script.kelas)})` : ""}
-          </div>
-          ${script.logline ? `<div style="font-size: 0.8em; font-style: italic; color: #475569; margin-top: 8px;">"${escapeHtml(script.logline)}"</div>` : ""}
-          ${hasScore ? `<div style="font-size: 0.8em; font-weight: 700; color: #1E3A8A; margin-top: 8px;">Nilai Guru: ${script.score} / 100 (${pred ? pred.grade + " - " + pred.label : ""})</div>` : ""}
-        </div>
-      `;
-
-      const blocksHtml = (script.elements || []).map((el) => {
+    function buildSceneBlocksHtml(script) {
+      return (script.elements || []).map((el) => {
         if (!el.content || !el.content.trim()) return "";
         const safeText = escapeHtml(el.content).replace(/\n/g, "<br/>");
         const styleMap = {
@@ -2139,48 +2369,85 @@
           action: "font-weight:400; margin-top:6px; margin-bottom:6px; width:100%; text-align:left; page-break-inside:avoid;",
           character: "font-weight:700; text-transform:uppercase; margin-top:14px; margin-bottom:2px; margin-left:34%; width:56%; text-align:left; page-break-after:avoid;",
           parenthetical: "font-style:italic; margin-top:0; margin-bottom:2px; margin-left:26%; width:48%; text-align:left; page-break-after:avoid;",
-          dialogue: "margin-top:0; margin-bottom:10px; margin-left:18%; width:64%; text-align:left; page-break-inside:avoid;",
+          dialogue: "margin-top:0; margin-bottom:10px; margin-left:16%; width:68%; text-align:left; page-break-inside:avoid;",
           transition: "font-weight:700; text-transform:uppercase; margin-top:12px; margin-bottom:12px; width:100%; text-align:right; page-break-inside:avoid;",
           shot: "font-weight:700; text-transform:uppercase; margin-top:12px; margin-bottom:6px; width:100%; text-align:left; color:#1E3A8A; page-break-inside:avoid;"
         };
         return `<div style="${styleMap[el.type] || styleMap.action}">${safeText}</div>`;
       }).join("");
+    }
 
-      return titleHeader + blocksHtml;
+    function buildFullA4PdfHtml(script) {
+      const hasScore = script.score !== null && script.score !== undefined && script.score !== "";
+      const pred = getPredikat(script.score);
+
+      const coverPage = `
+        <div style="width: 100%; height: 265mm; display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center; page-break-after: always; box-sizing: border-box; padding: 10mm 8mm;">
+          <div style="font-size: 9pt; letter-spacing: 0.14em; color: #64748B; text-transform: uppercase;">
+            NASKAH PRODUKSI AUDIO VISUAL
+          </div>
+
+          <div style="max-width: 145mm; margin: auto;">
+            <div style="font-size: 10pt; font-weight: 700; letter-spacing: 0.1em; color: #334155; text-transform: uppercase; margin-bottom: 14px;">
+              FORMAT: ${escapeHtml(script.formatType || "Film Pendek")}
+            </div>
+            <div style="font-size: 20pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #000000; text-decoration: underline; margin-bottom: 18px;">
+              ${escapeHtml(script.title || "JUDUL NASKAH")}
+            </div>
+            ${script.logline ? `<div style="font-size: 10.5pt; font-style: italic; color: #334155; line-height: 1.45; margin-bottom: 26px;">"${escapeHtml(script.logline)}"</div>` : ""}
+            <div style="font-size: 10pt; color: #475569; margin-bottom: 4px;">Ditulis oleh:</div>
+            <div style="font-size: 12pt; font-weight: 700; color: #000000; margin-bottom: 4px;">${escapeHtml(script.authorName || "Siswa")}</div>
+            ${script.kelas ? `<div style="font-size: 10.5pt; font-weight: 700; color: #1E293B;">Kelas: ${escapeHtml(script.kelas)}</div>` : ""}
+            ${hasScore ? `<div style="font-size: 10pt; font-weight: 700; color: #1E3A8A; margin-top: 14px;">Nilai Guru: ${script.score} / 100 (${pred ? pred.grade + " - " + pred.label : ""})</div>` : ""}
+          </div>
+
+          <div style="width: 100%; border-top: 1px solid #CBD5E1; padding-top: 10px; font-size: 9pt; color: #64748B; display: flex; justify-content: space-between;">
+            <span>Masjacks ScriptStudio</span>
+            <span>Guru Pengajar: Ja'far Shodiq, S.Kom., MM</span>
+          </div>
+        </div>
+      `;
+
+      const scenePages = `
+        <div style="width: 100%; box-sizing: border-box;">
+          ${buildSceneBlocksHtml(script)}
+          <div style="margin-top: 32px; padding-top: 12px; border-top: 1px dashed #CBD5E1; font-size: 9pt; color: #64748B; display: flex; justify-content: space-between;">
+            <span>Status: ${escapeHtml(script.status || "Draft")}</span>
+            <span>Dicetak via Masjacks ScriptStudio</span>
+          </div>
+        </div>
+      `;
+
+      return coverPage + scenePages;
     }
 
     function generatePDFFile(script) {
-      showToast("Menyiapkan dokumen PDF skenario...", "info");
+      showToast("Menyiapkan dokumen PDF ukuran A4...", "info");
 
       const wrapper = document.createElement("div");
       wrapper.style.fontFamily = "'Courier Prime', 'Courier New', monospace";
       wrapper.style.fontSize = "12pt";
-      wrapper.style.lineHeight = "1.25";
+      wrapper.style.lineHeight = "1.3";
       wrapper.style.color = "#000000";
       wrapper.style.background = "#FFFFFF";
-      wrapper.style.padding = "12mm 16mm";
-      wrapper.innerHTML = buildScreenplayHtmlBody(script) + `
-        <div style="margin-top: 32px; padding-top: 12px; border-top: 1px dashed #CBD5E1; font-size: 9pt; color: #64748B; display: flex; justify-content: space-between;">
-          <span>Status: ${escapeHtml(script.status || "Draft")}</span>
-          <span>Dicetak via Masjacks ScriptStudio</span>
-        </div>
-      `;
+      wrapper.innerHTML = buildFullA4PdfHtml(script);
 
       const safeFilename = (script.title || "Naskah_Skenario")
         .replace(/[^a-zA-Z0-9_\- ]/g, "")
         .trim()
-        .replace(/\s+/g, "_") + ".pdf";
+        .replace(/\s+/g, "_") + "_A4.pdf";
 
       if (typeof html2pdf !== "undefined") {
         const opt = {
-          margin: [10, 10, 10, 10],
+          margin: [14, 16, 14, 16],
           filename: safeFilename,
           image: { type: "jpeg", quality: 0.98 },
           html2canvas: { scale: 2, useCORS: true },
-          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+          pagebreak: { mode: ["css", "legacy"] }
         };
         html2pdf().set(opt).from(wrapper).save().then(() => {
-          showToast("PDF berhasil diunduh: " + safeFilename, "success");
+          showToast("PDF A4 berhasil diunduh: " + safeFilename, "success");
         }).catch(() => {
           fallbackPrintSheet(wrapper);
         });
@@ -2198,7 +2465,7 @@
     }
 
     // ==========================================
-    // 10. SCENE & CAST BREAKDOWN
+    // 12. SCENE & CAST BREAKDOWN
     // ==========================================
     window.renderBreakdown = function() {
       const select = document.getElementById("breakdown-script-select");
@@ -2275,7 +2542,7 @@
     };
 
     // ==========================================
-    // 11. PANEL PENILAIAN GURU (LOGIN, RUBRIK SKOR, & EVALUASI)
+    // 13. PANEL PENILAIAN GURU (LOGIN, RUBRIK SKOR, & EVALUASI)
     // ==========================================
     window.handleTeacherLogin = async function(e) {
       e.preventDefault();
@@ -2297,7 +2564,7 @@
           isTeacherLoggedIn = true;
           teacherEmailAddress = cred.user.email;
           refreshAllUI();
-          showToast("Selamat datang, Guru Penilai!", "success");
+          showToast("Selamat datang, Pak Ja'far Shodiq, S.Kom., MM!", "success");
         } catch (err) {
           showToast("Login Guru gagal: " + err.message, "error");
         }
@@ -2321,25 +2588,35 @@
       const title = document.getElementById("role-title");
       const sub = document.getElementById("role-subtitle");
       const galleryBtn = document.getElementById("gallery-teacher-btn");
+      const mobileRoleLabel = document.getElementById("mobile-role-label");
+      const mobileRoleBtn = document.getElementById("mobile-header-role-btn");
 
       if (isTeacherLoggedIn) {
-        avatar.textContent = "GR";
-        avatar.className = "w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0 font-bold text-xs";
-        title.textContent = "Mode Guru (Penilai)";
-        sub.textContent = teacherEmailAddress;
+        if (avatar) {
+          avatar.textContent = "JS";
+          avatar.className = "w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0 font-bold text-xs";
+        }
+        if (title) title.textContent = "Ja'far Shodiq (Guru)";
+        if (sub) sub.textContent = teacherEmailAddress;
         if (galleryBtn) {
           galleryBtn.innerHTML = `<i data-lucide="award" class="w-4 h-4 text-emerald-600"></i><span>Panel Penilaian Guru</span>`;
         }
+        if (mobileRoleLabel) mobileRoleLabel.textContent = "Guru Aktif";
+        if (mobileRoleBtn) mobileRoleBtn.className = "px-2.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-extrabold flex items-center gap-1 shrink-0";
       } else {
-        avatar.textContent = "SW";
-        avatar.className = "w-8 h-8 rounded-lg bg-slate-200 text-slate-700 flex items-center justify-center shrink-0 font-bold text-xs";
-        title.textContent = "Mode Siswa (Terbuka)";
-        sub.textContent = "Tanpa Login";
+        if (avatar) {
+          avatar.textContent = "SW";
+          avatar.className = "w-8 h-8 rounded-lg bg-slate-200 text-slate-700 flex items-center justify-center shrink-0 font-bold text-xs";
+        }
+        if (title) title.textContent = "Mode Siswa (Terbuka)";
+        if (sub) sub.textContent = "Tanpa Login";
         if (galleryBtn) {
           galleryBtn.innerHTML = `<i data-lucide="award" class="w-4 h-4 text-blue-600"></i><span>Login & Nilai Guru</span>`;
         }
+        if (mobileRoleLabel) mobileRoleLabel.textContent = "Login Guru";
+        if (mobileRoleBtn) mobileRoleBtn.className = "px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-blue-50 text-slate-800 border border-slate-200 text-[11px] font-bold flex items-center gap-1 shrink-0";
       }
-      lucide.createIcons();
+      if (typeof lucide !== "undefined") lucide.createIcons();
     }
 
     window.recalcRubricAverage = function(id) {
@@ -2377,7 +2654,7 @@
 
       loginBox.classList.add("hidden");
       dashBox.classList.remove("hidden");
-      document.getElementById("teacher-logged-email").textContent = "Akun Guru Aktif: " + teacherEmailAddress;
+      document.getElementById("teacher-logged-email").textContent = "Guru Pengajar: Ja'far Shodiq, S.Kom., MM (" + teacherEmailAddress + ")";
 
       const filterVal = document.getElementById("teacher-filter-status")?.value || "ALL";
       const filteredScripts = scriptsList.filter(s => {
@@ -2405,7 +2682,6 @@
 
         return `
           <div class="bg-white rounded-2xl border ${hasScore ? 'border-indigo-200' : 'border-slate-200'} p-5 shadow-sm space-y-4">
-            <!-- Header Info Karya Siswa -->
             <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-slate-100 pb-3">
               <div>
                 <div class="flex items-center gap-2 flex-wrap">
@@ -2429,18 +2705,18 @@
               </div>
 
               <div class="flex flex-wrap items-center gap-2">
-                <button onclick="openScriptPresentation('${s.id}')" class="min-h-[40px] px-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center gap-1.5">
+                <button type="button" onclick="openScriptPresentation('${s.id}')" class="min-h-[40px] px-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center gap-1.5">
                   <i data-lucide="eye" class="w-3.5 h-3.5"></i> Periksa Naskah
                 </button>
-                <button onclick="exportScriptByIdToPDF('${s.id}')" class="min-h-[40px] px-3 rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-bold flex items-center gap-1.5">
+                <button type="button" onclick="exportScriptByIdToPDF('${s.id}')" class="min-h-[40px] px-3 rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-bold flex items-center gap-1.5">
                   <i data-lucide="file-down" class="w-3.5 h-3.5"></i> PDF
                 </button>
                 ${isFinished ? `
-                  <button onclick="teacherUnlockScript('${s.id}')" class="min-h-[40px] px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold flex items-center gap-1.5" title="Buka Kunci agar siswa bisa mengedit kembali">
+                  <button type="button" onclick="teacherUnlockScript('${s.id}')" class="min-h-[40px] px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold flex items-center gap-1.5" title="Buka Kunci agar siswa bisa mengedit kembali">
                     <i data-lucide="unlock" class="w-3.5 h-3.5"></i> Buka Kunci
                   </button>
                 ` : ""}
-                <button onclick="confirmDeleteScript('${s.id}')" class="min-h-[40px] px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold flex items-center gap-1" title="Hapus Naskah (Khusus Guru)">
+                <button type="button" onclick="confirmDeleteScript('${s.id}')" class="min-h-[40px] px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold flex items-center gap-1" title="Hapus Naskah (Khusus Guru)">
                   <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Hapus
                 </button>
               </div>
@@ -2479,7 +2755,7 @@
 
               <div class="flex flex-col sm:flex-row gap-2 pt-1">
                 <input id="note-input-${s.id}" type="text" value="${escapeHtml(s.teacherNotes || "")}" placeholder="Tulis catatan masukan / umpan balik guru untuk kelompok ini..." class="flex-1 min-h-[42px] px-3.5 rounded-xl border border-slate-300 bg-white text-xs md:text-sm focus:outline-none focus:border-blue-600" />
-                <button onclick="saveTeacherGrade('${s.id}')" class="min-h-[42px] px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs md:text-sm font-bold shrink-0 shadow-sm flex items-center justify-center gap-1.5">
+                <button type="button" onclick="saveTeacherGrade('${s.id}')" class="min-h-[42px] px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs md:text-sm font-bold shrink-0 shadow-sm flex items-center justify-center gap-1.5">
                   <i data-lucide="check-circle-2" class="w-4 h-4"></i>
                   <span>Simpan Nilai & Catatan</span>
                 </button>
@@ -2489,7 +2765,7 @@
         `;
       }).join("");
 
-      lucide.createIcons();
+      if (typeof lucide !== "undefined") lucide.createIcons();
     };
 
     window.saveTeacherGrade = async function(id) {
@@ -2554,7 +2830,7 @@
     };
 
     // ==========================================
-    // 12. UTILITIES (MODAL, TOAST, ESCAPE HTML)
+    // 14. UTILITIES (MODAL, TOAST, ESCAPE HTML)
     // ==========================================
     let confirmCallback = null;
 
@@ -2571,7 +2847,7 @@
 
       confirmCallback = onConfirm;
       document.getElementById("confirm-modal").classList.remove("hidden");
-      lucide.createIcons();
+      if (typeof lucide !== "undefined") lucide.createIcons();
     }
 
     window.closeConfirmModal = function() {
@@ -2614,7 +2890,9 @@
     function refreshAllUI() {
       updateAuthUI();
       renderGallery();
-      renderEditor();
+      if (!isUserActivelyTypingInEditor()) {
+        renderEditor();
+      }
       renderTeacherPanel();
     }
 
