@@ -6,7 +6,7 @@
   <title>Masjacks ScriptStudio — Collaborative Screenplay & Ad Script Editor</title>
 
   <!-- PWA Manifest via Data URI (Single-File PWA) -->
-  <link rel="manifest" href='data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Masjacks%20ScriptStudio%22%2C%22short_name%22%3A%22ScriptStudio%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23F1F5F9%22%2C%22theme_color%22%3A%22%232563EB%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%2520viewBox%3D%270%200%20100%20100%27%253E%253Crect%2520width%3D%27100%27%2520height%3D%27100%27%2520rx%3D%2720%27%2520fill%3D%27%25232563EB%27%2F%253E%253Ctext%2520x%3D%2750%27%2520y%3D%2768%27%2520font-size%3D%2755%27%2520text-anchor%3D%27middle%27%2520fill%3D%27white%27%2520font-family%3D%27monospace%27%253ES%253C%2Ftext%253E%253C%2Fsvg%253E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D' />
+  <link rel="manifest" href='data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Masjacks%20ScriptStudio%22%2C%22short_name%22%3A%22ScriptStudio%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23F1F5F9%22%2C%22theme_color%22%3A%22%232563EB%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%2520viewBox%3D%270%200%20100%20100%27%253E%253Crect%2520width%3D%27100%27%2520height%3D%27100%27%2520rx%3D%2720%27%2520fill%3D%27%25232563EB%27%2F%253E%253Ctext%2520x%3D%2750%27%2520y%3D%2768%27%2520font-size%3D%2755%27%2520text-anchor%3D%27middle%27%2520fill%3D%27white%27%2520font-family%3D%27monospace%27%253ES%253C%2Ftext%3E%253C%2Fsvg%3E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D' />
   <meta name="theme-color" content="#2563EB" />
 
   <!-- Fonts: Plus Jakarta Sans (UI) & Courier Prime (Screenplay Industry Standard) -->
@@ -63,12 +63,33 @@
     :root { --pl: 28mm; --pr: 20mm; --pt: 20mm; --pb: 20mm; }
     .a4-stack { width: 210mm; display: flex; flex-direction: column; gap: 24px; flex: none; transform-origin: top left; }
     .a4-sheet { background: #FFFFFF; width: 210mm; border: 1px solid #CBD5E1; position: relative; box-sizing: border-box; color: #000; }
-    .script-paper { padding: var(--pt) var(--pr) 0 var(--pl); min-height: 297mm; }
-    #paper-scale-wrap, #pid-scale-wrap { position: relative; flex: none; margin: 0 auto; }
-    #paper-viewport { --gap-bg: #F1F5F9; overflow-x: auto; overflow-y: hidden; width: 100%; }
-    #main-scroll-area { overflow-anchor: none; }
+
+    /* Kertas Naskah A4 dengan Garis Batas Halaman Statis (CSS Murni tiap 297mm) */
+    .script-paper {
+      padding: var(--pt) var(--pr) var(--pb) var(--pl);
+      min-height: 297mm;
+      background-color: #FFFFFF;
+      background-image:
+        repeating-linear-gradient(
+          to right,
+          #FFFFFF 0,
+          #FFFFFF 6px,
+          transparent 6px,
+          transparent 12px
+        ),
+        repeating-linear-gradient(
+          to bottom,
+          transparent 0,
+          transparent calc(297mm - 1.5px),
+          #94A3B8 calc(297mm - 1.5px),
+          #94A3B8 297mm
+        );
+    }
+
+    #paper-scale-wrap, #pid-scale-wrap { position: relative; flex: none; margin: 0 auto; width: 210mm; }
+    #paper-viewport { overflow-x: auto; overflow-y: hidden; width: 100%; }
+    #main-scroll-area { overflow-y: scroll; overflow-anchor: none; }
     #view-editor .sticky { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; background: #FFFFFF !important; }
-    #pid-scroll { --gap-bg: #0F172A; }
 
     /* Halaman Cover (judul di tengah kertas) */
     .cover-sheet { height: 297mm; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 0 22mm; overflow: hidden; }
@@ -82,11 +103,6 @@
     .cover-format { margin-top: 14mm; font-size: 10pt; letter-spacing: .15em; text-transform: uppercase; color: #64748B; }
     .cover-score { margin-top: 6mm; font-size: 10pt; font-weight: 700; color: #1E3A8A; }
 
-    /* Pemisah halaman A4 */
-    .page-gap { position: relative; margin-left: calc(-1 * var(--pl) - 1px); margin-right: calc(-1 * var(--pr) - 1px); pointer-events: none; user-select: none; }
-    .page-gap .pg-strip { position: absolute; left: 0; right: 0; background: var(--gap-bg, #F1F5F9); border-top: 1px solid #CBD5E1; border-bottom: 1px solid #CBD5E1; }
-    .page-gap .pg-num { position: absolute; right: calc(var(--pr) + 1px); font-family: 'Plus Jakarta Sans', sans-serif; font-size: 10pt; font-weight: 600; color: #64748B; }
-
     /* Baris naskah */
     .pg-row { position: relative; display: flow-root; border-radius: 6px; }
     .row-badge { position: absolute; left: calc(-1 * var(--pl) + 6px); top: 9px; width: calc(var(--pl) - 14px); text-align: right; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; padding: 2px 6px; border-radius: 4px; box-sizing: border-box; user-select: none; }
@@ -98,7 +114,7 @@
     .grow-wrap { display: grid; }
     .grow-wrap::after { content: attr(data-replicated-value) " "; white-space: pre-wrap; visibility: hidden; }
     .grow-wrap > textarea, .grow-wrap::after { grid-area: 1 / 1 / 2 / 2; padding: 6px 8px; border: 0; font: inherit; letter-spacing: inherit; line-height: inherit; text-align: inherit; text-transform: inherit; overflow-wrap: break-word; word-break: break-word; min-width: 0; box-sizing: border-box; }
-    .script-textarea { resize: none; overflow: hidden; background: transparent; outline: none; border-radius: 6px; color: #000000; display: block; width: 100%; height: 100%; white-space: pre-wrap; scroll-margin-top: 190px; scroll-margin-bottom: 60px; }
+    .script-textarea { resize: none; overflow: hidden; background: transparent; outline: none; border-radius: 6px; color: #000000; display: block; width: 100%; height: 100%; white-space: pre-wrap; }
     .script-textarea:focus { background-color: #EEF2FF; box-shadow: inset 0 0 0 1.5px #2563EB; }
     .script-textarea[readonly] { cursor: default; }
     .script-textarea[readonly]:focus { background-color: transparent; box-shadow: none; }
@@ -231,7 +247,7 @@
       </aside>
 
       <!-- MAIN CONTENT WORKSPACE -->
-      <main id="main-scroll-area" class="flex-1 overflow-y-auto relative">
+      <main id="main-scroll-area" class="flex-1 relative">
         <!-- VIEW 1: HALAMAN DEPAN (GALERI NASKAH SISWA + MENU SEARCH NAMA DI AWAL) -->
         <section id="view-gallery" class="max-w-7xl mx-auto p-4 md:p-6 space-y-5">
           <!-- Brand & Guru Pengajar (tampil di HP) -->
@@ -498,7 +514,7 @@
               </div>
             </div>
 
-            <!-- KERTAS SKENARIO A4 (Cover + Halaman Scene) -->
+            <!-- KERTAS SKENARIO A4 (Cover + Halaman Scene dengan Garis Batas CSS Statis) -->
             <div class="md:hidden text-[11px] font-semibold text-slate-500 mb-2 text-center">Tampilan kertas A4 • tekan tombol <strong>+</strong> di atas untuk memperbesar tulisan</div>
             <div id="paper-viewport">
               <div id="paper-scale-wrap">
@@ -720,11 +736,11 @@
     // PASTE FIREBASE CONFIG ANDA DI SINI
     const firebaseConfig = {
       apiKey: "AIzaSyASlcpIRjlaLAwuHPT7v_FZLaYArAC6h-0",
-  authDomain: "masjacks-script.firebaseapp.com",
-  projectId: "masjacks-script",
-  storageBucket: "masjacks-script.firebasestorage.app",
-  messagingSenderId: "1047200526895",
-  appId: "1:1047200526895:web:1dfdd3f7cc9c58b1ee8cda"
+      authDomain: "masjacks-script.firebaseapp.com",
+      projectId: "masjacks-script",
+      storageBucket: "masjacks-script.firebasestorage.app",
+      messagingSenderId: "1047200526895",
+      appId: "1:1047200526895:web:1dfdd3f7cc9c58b1ee8cda"
     };
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -736,7 +752,7 @@
     // ==========================================
     if ('serviceWorker' in navigator) {
       const swCode = `
-        const CACHE_NAME = 'masjacks-scriptstudio-v4';
+        const CACHE_NAME = 'masjacks-scriptstudio-v5';
         self.addEventListener('install', (e) => self.skipWaiting());
         self.addEventListener('activate', (e) => e.waitUntil(clients.claim()));
         self.addEventListener('fetch', (e) => {
@@ -910,7 +926,6 @@
             const remoteDoc = scriptsList.find(s => s.id === currentScript.id);
             if (remoteDoc && !snapshot.metadata.hasPendingWrites) {
               const incomingFp = computeScriptFingerprint(remoteDoc);
-              // HANYA proses merge jika dokumen yang sedang dibuka BENAR-BENAR berubah di server
               if (incomingFp !== lastRemoteFingerprint) {
                 lastRemoteFingerprint = incomingFp;
                 mergeRemoteScriptSafely(remoteDoc);
@@ -994,7 +1009,7 @@
         if (savedId) {
           const restoredTa = document.querySelector(`[data-block-id="${savedId}"]`);
           if (restoredTa) {
-            restoredTa.focus();
+            restoredTa.focus({ preventScroll: true });
             if (selStart !== null && selEnd !== null) { try { restoredTa.setSelectionRange(selStart, selEnd); } catch (_) {} }
           }
         }
@@ -1011,83 +1026,18 @@
         if (row) row.dataset.type = block.type;
         syncGrow(ta);
       });
-      schedulePaginate();
+      layoutEditorScale();
     }
 
     // ==========================================
-    // ENGINE KERTAS A4: PAGINASI, SKALA LAYAR, COVER
+    // ENGINE KERTAS A4: SKALA LAYAR & COVER (TANPA PAGINASI / SCROLL OTOMATIS)
     // ==========================================
     const MM_PX = 96 / 25.4;
     const A4_W_PX = 210 * MM_PX;
-    const PG = { H: 297 * MM_PX, T: 20 * MM_PX, B: 20 * MM_PX, G: 24 };
-    const KEEP_WITH_NEXT = new Set(["scene", "character", "parenthetical", "shot"]);
     const ZOOM_STEPS = [50, 60, 70, 80, 90, 100, 110, 125, 150, 175, 200, 250, 300];
 
     function syncGrow(ta) {
       if (ta && ta.parentElement) ta.parentElement.dataset.replicatedValue = ta.value;
-    }
-
-    function setGapContent(gap, h, wBottom, pageNo, withStrip) {
-      const sig = `${Math.round(h * 10)}|${Math.round(wBottom * 10)}|${pageNo}|${withStrip ? 1 : 0}`;
-      if (gap.dataset.sig === sig) return false;
-      gap.dataset.sig = sig;
-      gap.dataset.h = String(h);
-      gap.style.height = h + "px";
-      const numTop = Math.max(0, wBottom - PG.B * 0.6);
-      gap.innerHTML = (withStrip ? `<div class="pg-strip" style="top:${wBottom}px;height:${PG.G}px"></div>` : "") + `<div class="pg-num" style="top:${numTop}px">${pageNo}</div>`;
-      return true;
-    }
-
-    // Menyisipkan "spacer" antar-baris agar naskah terbagi menjadi halaman A4 sungguhan (tanpa memindahkan textarea => keyboard aman)
-    function paginateList(listEl) {
-      if (!listEl || !listEl.offsetWidth) return false;
-      const { H, T, B, G } = PG;
-      const P = H + G, C = H - T - B;
-      const rows = [];
-      let spacerSum = 0;
-      const lr = listEl.getBoundingClientRect();
-      const sc = lr.width / (162 * MM_PX) || 1;
-      for (const el of Array.from(listEl.children)) {
-        if (el.classList.contains("page-gap")) { spacerSum += parseFloat(el.dataset.h || "0") || 0; continue; }
-        const rr = el.getBoundingClientRect();
-        rows.push({ el, top: T + (rr.top - lr.top) / sc - spacerSum, h: rr.height / sc, type: el.dataset.type || "" });
-      }
-      const plans = new Array(rows.length).fill(null);
-      let offset = 0;
-      for (let i = 0; i < rows.length; i++) {
-        const top = rows[i].top + offset;
-        let chainH = 0, j = i;
-        while (j < rows.length && j - i < 3) { chainH += rows[j].h; if (!KEEP_WITH_NEXT.has(rows[j].type)) break; j++; }
-        const fitH = chainH <= C ? chainH : rows[i].h;
-        const k = Math.max(0, Math.floor((top - T) / P));
-        const pageTop = k * P + T;
-        const limit = pageTop + C;
-        const atTop = Math.abs(top - pageTop) < 2;
-        if (!atTop && top + fitH > limit + 2) {
-          const sp = (k + 1) * P + T - top;
-          plans[i] = { h: sp, wBottom: Math.max(0, k * P + H - top), page: k + 1 };
-          offset += sp;
-        }
-      }
-      let changed = false;
-      rows.forEach((r, i) => {
-        const prev = r.el.previousElementSibling;
-        const hasGap = prev && prev.classList.contains("page-gap");
-        if (plans[i]) {
-          let gap = hasGap ? prev : null;
-          if (!gap) { gap = document.createElement("div"); gap.className = "page-gap"; gap.setAttribute("aria-hidden", "true"); listEl.insertBefore(gap, r.el); changed = true; }
-          if (setGapContent(gap, plans[i].h, plans[i].wBottom, plans[i].page, true)) changed = true;
-        } else if (hasGap) { prev.remove(); changed = true; }
-      });
-      const last = listEl.lastElementChild;
-      let endGap = last && last.classList.contains("page-gap") ? last : null;
-      if (!endGap) { endGap = document.createElement("div"); endGap.className = "page-gap"; endGap.setAttribute("aria-hidden", "true"); listEl.appendChild(endGap); changed = true; }
-      const lastRow = rows[rows.length - 1];
-      const lastBottom = lastRow ? lastRow.top + offset + lastRow.h : T;
-      const kL = Math.max(0, Math.floor((lastBottom - 1 - T) / P));
-      const endH = Math.max(0, kL * P + H - lastBottom);
-      if (setGapContent(endGap, endH, endH, kL + 1, false)) changed = true;
-      return changed;
     }
 
     function layoutScaled(vp, wrap, stack, zoom) {
@@ -1096,9 +1046,15 @@
       const avail = vp.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
       if (avail <= 0) return;
       const s = Math.min(1, avail / A4_W_PX) * (zoom / 100);
-      stack.style.transform = `scale(${s})`;
-      wrap.style.width = (A4_W_PX * s) + "px";
-      wrap.style.height = (Math.ceil(stack.offsetHeight * s) + 4) + "px";
+      if (Math.abs(s - 1) < 0.001) {
+        stack.style.transform = "none";
+        wrap.style.width = "210mm";
+        wrap.style.height = "auto";
+      } else {
+        stack.style.transform = `scale(${s})`;
+        wrap.style.width = (A4_W_PX * s) + "px";
+        wrap.style.height = Math.ceil(stack.offsetHeight * s) + "px";
+      }
     }
     function layoutEditorScale() {
       layoutScaled(document.getElementById("paper-viewport"), document.getElementById("paper-scale-wrap"), document.getElementById("paper-stack"), editorZoom);
@@ -1106,29 +1062,6 @@
     function layoutPidScale() {
       layoutScaled(document.getElementById("pid-scroll"), document.getElementById("pid-scale-wrap"), document.getElementById("pid-presentation-paper"), pidZoom);
     }
-
-    let paginateRaf = 0;
-    function schedulePaginate() {
-      if (paginateRaf) return;
-      paginateRaf = requestAnimationFrame(() => {
-        paginateRaf = 0;
-        const changed = paginateList(document.getElementById("script-blocks-list"));
-        const pidList = document.querySelector("#pid-presentation-paper .pid-list");
-        if (pidList) paginateList(pidList);
-        layoutEditorScale();
-        layoutPidScale();
-        const a = document.activeElement;
-        if (changed && a && a.classList && a.classList.contains("script-textarea")) {
-          const main = document.getElementById("main-scroll-area");
-          const bar = document.querySelector("#view-editor .sticky");
-          const topLimit = (bar ? bar.getBoundingClientRect().bottom : 0) + 8;
-          const botLimit = (window.visualViewport ? window.visualViewport.height : window.innerHeight) - 90;
-          const r = a.getBoundingClientRect();
-          if (main && (r.top > botLimit || r.bottom < topLimit)) main.scrollBy(0, r.top - topLimit - 40);
-        }
-      });
-    }
-    function refreshPaperLayout() { layoutEditorScale(); schedulePaginate(); }
 
     function updateCoverDisplay() {
       const s = currentScript || {};
@@ -1282,7 +1215,6 @@
       if (tabName === "editor") {
         if (!currentScript) currentScript = createBlankScriptObject();
         renderEditor();
-        requestAnimationFrame(refreshPaperLayout);
       }
       if (tabName === "breakdown") renderBreakdown();
       if (tabName === "teacher") renderTeacherPanel();
@@ -1597,10 +1529,8 @@
       renderSmartChips();
       updateDurationBadge();
       lucide.createIcons();
-      refreshPaperLayout();
+      layoutEditorScale();
     };
-
-    function autoResizeTextarea(el) { syncGrow(el); }
 
     window.updateMetaField = function(field, val) {
       if (!currentScript || currentScript.status === "Finish") return;
@@ -1639,7 +1569,6 @@
     };
 
     window.handleBlockBlur = function(idx) {
-      // Normalisasi huruf kapital saat selesai mengetik baris tanpa mengganggu IME saat mengetik
       if (currentScript && currentScript.elements[idx]) {
         const block = currentScript.elements[idx];
         if (["scene", "character", "transition", "shot"].includes(block.type) && block.content) {
@@ -1715,7 +1644,6 @@
       focusedBlockId = block.id;
       lastLocalEditAt = Date.now();
 
-      // Simpan nilai mentah langsung tanpa memaksa setSelectionRange agar keyboard layar sentuh/IME tidak macet
       const rawVal = textareaEl.value;
       block.content = ["scene", "character", "transition", "shot"].includes(block.type)
         ? rawVal.toUpperCase()
@@ -1723,7 +1651,6 @@
 
       syncGrow(textareaEl);
       updateDurationBadge();
-      schedulePaginate();
       scheduleAutoSync();
     };
 
@@ -1877,7 +1804,7 @@
       setTimeout(() => {
         const ta = document.getElementById("block-input-" + idx);
         if (ta) {
-          ta.focus();
+          ta.focus({ preventScroll: true });
           const len = ta.value.length;
           try {
             if (ta.value === "()") {
@@ -2248,10 +2175,7 @@
     function renderPresentationPaper() {
       const container = document.getElementById("pid-presentation-paper");
       container.innerHTML = buildPidSheetsHtml(pidScript);
-      const list = container.querySelector(".pid-list");
-      paginateList(list);
       layoutPidScale();
-      schedulePaginate();
     }
 
     // ==========================================
@@ -2790,19 +2714,16 @@
     initAppEngine();
     switchTab("gallery");
 
-    window.addEventListener("resize", () => { layoutEditorScale(); layoutPidScale(); schedulePaginate(); });
+    window.addEventListener("resize", () => { layoutEditorScale(); layoutPidScale(); });
     if (document.fonts) {
-      document.fonts.ready.then(schedulePaginate);
-      document.fonts.addEventListener?.("loadingdone", schedulePaginate);
+      document.fonts.ready.then(() => { layoutEditorScale(); layoutPidScale(); });
     }
     if (typeof ResizeObserver !== "undefined") {
-      const ro = new ResizeObserver(() => { layoutEditorScale(); layoutPidScale(); });
+      const ro = new ResizeObserver(() => {
+        if (editorZoom !== 100 || window.innerWidth < 860) layoutEditorScale();
+        if (!document.getElementById("pid-presentation-modal").classList.contains("hidden")) layoutPidScale();
+      });
       ["paper-stack", "pid-presentation-paper"].forEach(id => { const n = document.getElementById(id); if (n) ro.observe(n); });
-      const lst = document.getElementById("script-blocks-list");
-      if (lst) {
-        let lastW = 0;
-        new ResizeObserver(() => { const w = lst.offsetWidth; if (w !== lastW) { lastW = w; schedulePaginate(); } }).observe(lst);
-      }
     }
   </script>
 </body>
