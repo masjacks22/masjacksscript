@@ -415,7 +415,7 @@
             </div>
 
             <!-- Smart Auto-Complete Chips Bar untuk Layar Sentuh PID -->
-            <div id="smart-chips-bar" class="max-w-6xl mx-auto mt-2 flex items-center gap-1.5 overflow-x-auto pb-0.5"></div>
+            <div id="smart-chips-bar" class="max-w-6xl mx-auto mt-2 flex items-center gap-1.5 overflow-x-auto pb-0.5 min-h-[34px]"></div>
           </div>
 
           <!-- Locked Banner jika status === 'Finish' -->
@@ -755,6 +755,8 @@
     let teacherEmailAddress = "";
     let scriptsList = [];
     let currentScript = null;
+    let pidScript = null;
+    let breakdownScriptId = null;
     let lastRemoteFingerprint = "";
     let activeBlockIndex = 0;
     let focusedBlockId = null;
@@ -868,9 +870,8 @@
         `;
 
         scriptsList = JSON.parse(JSON.stringify(INITIAL_PREVIEW_SCRIPTS));
-        currentScript = JSON.parse(JSON.stringify(scriptsList[0]));
-        currentScript.elements = normalizeElements(currentScript.elements);
-        lastRemoteFingerprint = computeScriptFingerprint(currentScript);
+        currentScript = createBlankScriptObject();
+        lastRemoteFingerprint = "";
         refreshAllUI();
       } else {
         // Mode Produksi Murni (ZERO dummy data, ZERO preview UI, ZERO localStorage)
@@ -901,10 +902,7 @@
             };
           });
 
-          if (!currentScript && scriptsList.length > 0) {
-            currentScript = JSON.parse(JSON.stringify(scriptsList[0]));
-            lastRemoteFingerprint = computeScriptFingerprint(currentScript);
-          } else if (!currentScript) {
+          if (!currentScript) {
             currentScript = createBlankScriptObject();
           } else if (currentScript.id) {
             const remoteDoc = scriptsList.find(s => s.id === currentScript.id);
@@ -1115,7 +1113,14 @@
         layoutEditorScale();
         layoutPidScale();
         const a = document.activeElement;
-        if (changed && a && a.classList && a.classList.contains("script-textarea")) { try { a.scrollIntoView({ block: "nearest" }); } catch (_) {} }
+        if (changed && a && a.classList && a.classList.contains("script-textarea")) {
+          const main = document.getElementById("main-scroll-area");
+          const bar = document.querySelector("#view-editor .sticky");
+          const topLimit = (bar ? bar.getBoundingClientRect().bottom : 0) + 8;
+          const botLimit = (window.visualViewport ? window.visualViewport.height : window.innerHeight) - 90;
+          const r = a.getBoundingClientRect();
+          if (main && (r.top > botLimit || r.bottom < topLimit)) main.scrollBy(0, r.top - topLimit - 40);
+        }
       });
     }
     function refreshPaperLayout() { layoutEditorScale(); schedulePaginate(); }
@@ -2158,7 +2163,7 @@
       if (IS_PREVIEW) {
         scriptsList = scriptsList.filter(s => s.id !== id);
         if (currentScript && currentScript.id === id) {
-          currentScript = scriptsList[0] ? JSON.parse(JSON.stringify(scriptsList[0])) : createBlankScriptObject();
+          currentScript = createBlankScriptObject();
         }
         refreshAllUI();
         if (!document.getElementById("view-editor").classList.contains("hidden")) {
@@ -2187,7 +2192,7 @@
     window.openScriptPresentation = function(id) {
       const found = scriptsList.find(s => s.id === id);
       if (!found) return;
-      currentScript = JSON.parse(JSON.stringify(found));
+      pidScript = JSON.parse(JSON.stringify(found));
       togglePresentationMode(true);
     };
 
@@ -2199,7 +2204,9 @@
         return;
       }
 
-      document.getElementById("pid-modal-title").textContent = `${currentScript.title || "TANPA JUDUL"} — ${currentScript.authorName || ""}`;
+      if (!forceOpen) pidScript = currentScript ? JSON.parse(JSON.stringify(currentScript)) : null;
+      if (!pidScript) return;
+      document.getElementById("pid-modal-title").textContent = `${pidScript.title || "TANPA JUDUL"} — ${pidScript.authorName || ""}`;
       modal.classList.remove("hidden");
       renderPresentationPaper();
       lucide.createIcons();
@@ -2235,7 +2242,7 @@
 
     function renderPresentationPaper() {
       const container = document.getElementById("pid-presentation-paper");
-      container.innerHTML = buildPidSheetsHtml(currentScript);
+      container.innerHTML = buildPidSheetsHtml(pidScript);
       const list = container.querySelector(".pid-list");
       paginateList(list);
       layoutPidScale();
@@ -2252,8 +2259,13 @@
     };
 
     window.exportCurrentScriptToPDF = function() {
-      if (!currentScript) return;
-      generatePDFFile(currentScript);
+      const pidOpen = !document.getElementById("pid-presentation-modal").classList.contains("hidden");
+      const bdOpen = !document.getElementById("view-breakdown").classList.contains("hidden");
+      let target = currentScript;
+      if (pidOpen && pidScript) target = pidScript;
+      else if (bdOpen && breakdownScriptId) target = scriptsList.find(s => s.id === breakdownScriptId) || currentScript;
+      if (!target) return;
+      generatePDFFile(target);
     };
 
     function buildScreenplayHtmlBody(script) {
@@ -2359,16 +2371,16 @@
         return;
       }
 
+      const wantedId = scriptsList.some(s => s.id === breakdownScriptId) ? breakdownScriptId : scriptsList[0].id;
+      breakdownScriptId = wantedId;
       select.innerHTML = scriptsList.map(s => `
-        <option value="${s.id}" ${currentScript && currentScript.id === s.id ? "selected" : ""}>
+        <option value="${s.id}" ${s.id === wantedId ? "selected" : ""}>
           ${escapeHtml(s.title || "Tanpa Judul")} (${escapeHtml(s.authorName || "Siswa")})
         </option>
       `).join("");
 
-      const selectedId = select.value || scriptsList[0].id;
-      const target = scriptsList.find(s => s.id === selectedId) || currentScript;
+      const target = scriptsList.find(s => s.id === wantedId);
       if (!target) return;
-      currentScript = JSON.parse(JSON.stringify(target));
 
       const scenes = (target.elements || []).filter(e => e.type === "scene" && e.content.trim());
       document.getElementById("breakdown-scene-count").textContent = `${scenes.length} Scene`;
@@ -2417,9 +2429,8 @@
     };
 
     window.selectBreakdownScript = function(id) {
-      const found = scriptsList.find(s => s.id === id);
-      if (found) {
-        currentScript = JSON.parse(JSON.stringify(found));
+      if (scriptsList.some(s => s.id === id)) {
+        breakdownScriptId = id;
         renderBreakdown();
       }
     };
